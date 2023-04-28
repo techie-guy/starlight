@@ -1,4 +1,4 @@
-# mist-engine
+# mist-lib
 
 Loosely packed Game "Library" written in C
 
