@@ -1,0 +1,9 @@
+[submodule "third-party/cglm"]
+	path = third-party/cglm
+	url = https://github.com/recp/cglm.git
+[submodule "third-party/hashmap.c"]
+	path = third-party/hashmap.c
+	url = https://github.com/tidwall/hashmap.c.git
+[submodule "third-party/cJSON"]
+	path = third-party/cJSON
+	url = https://github.com/DaveGamble/cJSON.git

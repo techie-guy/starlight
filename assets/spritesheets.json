@@ -1,0 +1,40 @@
+{
+"spriteSheets": [
+	{
+		"name": "player",
+		"path": "assets/textures/player.png",
+		"defaultSprite": "idle",
+		"width": 192,
+		"height": 32,
+		"sprites": [	
+			{
+				"name": "idle",
+				"x": 0,
+				"y": 0,
+				"frameSpeed": 2,
+				"spriteCount": 6,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			}
+		]	
+	},
+	{
+		"name": "map",
+		"path": "assets/textures/tiles.png",
+		"defaultSprite": "grass",
+		"width": 32,
+		"height": 32,
+		"sprites": [
+			{
+				"name": "grass",
+				"x": 0,
+				"y": 0,
+				"frameSpeed": 20,
+				"spriteCount": 1,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			}
+		]
+	}
+]
+}
