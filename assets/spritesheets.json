@@ -5,29 +5,74 @@
 		"path": "assets/textures/player.png",
 		"defaultSprite": "idle",
 		"width": 192,
-		"height": 32,
+		"height": 64,
 		"sprites": [	
 			{
 				"name": "idle",
 				"x": 0,
-				"y": 0,
-				"frameSpeed": 2,
+				"y": 1,
+				"frameSpeed": 10,
 				"spriteCount": 6,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "strafe",
+				"x": 0,
+				"y": 2,
+				"frameSpeed": 10,
+				"spriteCount": 2,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-up",
+				"x": 2,
+				"y": 2,
+				"frameSpeed": 10,
+				"spriteCount": 2,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-down",
+				"x": 4,
+				"y": 2,
+				"frameSpeed": 10,
+				"spriteCount": 2,
 				"spriteWidth": 32,
 				"spriteHeight": 32
 			}
 		]	
 	},
 	{
-		"name": "map",
+		"name": "tiles",
 		"path": "assets/textures/tiles.png",
 		"defaultSprite": "grass",
-		"width": 32,
+		"width": 96,
 		"height": 32,
 		"sprites": [
 			{
 				"name": "grass",
 				"x": 0,
+				"y": 0,
+				"frameSpeed": 20,
+				"spriteCount": 1,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "stone",
+				"x": 1,
+				"y": 0,
+				"frameSpeed": 20,
+				"spriteCount": 1,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "water",
+				"x": 2,
 				"y": 0,
 				"frameSpeed": 20,
 				"spriteCount": 1,
