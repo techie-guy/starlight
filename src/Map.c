@@ -13,11 +13,6 @@
 
 #include <hashmap.h>
 
-typedef struct
-{
-	Vertex vertices[4];
-} Tile;
-
 #define MAP_SIZE_X 30
 #define MAP_SIZE_Y 30
 #define MAP_TILE_COUNT MAP_SIZE_X * MAP_SIZE_Y
@@ -28,7 +23,7 @@ static VertexAttributes vertexAttributes;
 static Texture texture;
 static SpriteSheet* spriteSheet;
 
-static Tile tiles[MAP_TILE_COUNT];
+static Quad tiles[MAP_TILE_COUNT];
 
 static GLushort indices[MAP_TILE_COUNT * 6];
 
@@ -44,7 +39,7 @@ void fillMap()
 			float x2 = (float)((x+1)*texture.width);
 			float y2 = (float)((y+1)*texture.height);
 
-			tiles[y * MAP_SIZE_X + x] = (Tile)
+			tiles[y * MAP_SIZE_X + x] = (Quad)
 			{
 				{
 					{{{x2, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{1.0f, 1.0f}}},
@@ -53,6 +48,9 @@ void fillMap()
 					{{{x1, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{0.0f, 1.0f}}},
 				}
 			};
+
+			Sprite* sprite = hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name="stone" });
+			getSpriteUV(&tiles[y * MAP_SIZE_X + x], spriteSheet, sprite);
 		}
 	}
 
@@ -75,7 +73,7 @@ void fillMap()
 
 void initMap()
 {
-	spriteSheet = hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="map" });
+	spriteSheet = hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="tiles" });
 
 	initTexture(&texture, spriteSheet->path);
 	
@@ -91,7 +89,7 @@ void drawMap(const mat4s viewTimesProj)
 	bindTexture(&texture);
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
-	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
+	transform = glms_scale(transform, (vec3s){{0.5f, 2.0f, 0.0f}});
 	transform = glms_translate(transform, (vec3s){{0.0f, 0.0f, 0.0f}});
 
 	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&viewTimesProj, &transform}, 2);
@@ -100,6 +98,7 @@ void drawMap(const mat4s viewTimesProj)
 	uniformMat4(&shaderProgram, "mvp", mvp);
 
 	bindVAO(&vertexAttributes);
+
 	glDrawElements(GL_TRIANGLES, MAP_TILE_COUNT*6, GL_UNSIGNED_SHORT, 0);
 }
 
