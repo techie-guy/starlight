@@ -12,6 +12,11 @@ typedef struct
 
 typedef struct
 {
+	Vertex vertices[4];
+} Quad;
+
+typedef struct
+{
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int EBO;
