@@ -3,8 +3,8 @@ PROJECTNAME=mist-lib
 PLATFORM?=native
 BUILDTYPE?=debug
 CC?=
-CFLAGS?=-Wall -DWINDOW_WIDTH=1280 -DWINDOW_HEIGHT=720 -DWINDOW_TITLE=\""Mist Lib\"" -std=gnu17 -I include -I third-party/glad/include -I third-party/stb/include -I third-party/cglm/include -I third-party/cJSON -I third-party/hashmap.c -I third-party/dr_wav/include
-LDFLAGS?=-lglfw3 -lopenal
+CFLAGS?=-Wall -DWINDOW_WIDTH=1280 -DWINDOW_HEIGHT=720 -DWINDOW_TITLE=\""Mist Lib\"" -std=gnu17 -I include -I third-party/glad/include -I third-party/stb/include -I third-party/cglm/include -I third-party/cJSON -I third-party/hashmap.c
+LDFLAGS?=-lglfw3
 ASSETSDIR=assets
 EXECUTABLE=$(BINDIR)/$(PROJECTNAME)
 BUILDDIR?=bin
@@ -26,7 +26,7 @@ else ifeq ($(BUILDTYPE),release)
 	CFLAGS += -O1
 endif
 
-SRCDIRS=src third-party/glad/src third-party/stb/src third-party/cglm/src third-party/dr_wav/src
+SRCDIRS=src third-party/glad/src third-party/stb/src third-party/cglm/src
 SOURCES+=third-party/cJSON/cJSON.c third-party/hashmap.c/hashmap.c
 SOURCES+=$(shell find $(SRCDIRS) -name '*.c')
 
