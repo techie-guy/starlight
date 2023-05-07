@@ -11,7 +11,10 @@
 	#include <GLES3/gl3.h>
 #endif
 
+#include <time.h>
+
 #include <hashmap.h>
+#include <stb_perlin.h>
 
 #define MAP_SIZE_X 30
 #define MAP_SIZE_Y 30
@@ -29,11 +32,25 @@ static GLushort indices[MAP_TILE_COUNT * 6];
 
 void fillMap()
 {
+	srand(time(NULL));
+	const int seed = rand();
+
 	// Vertices
 	for(int y = 0; y < MAP_SIZE_Y; y++)
 	{
 		for(int x = 0; x < MAP_SIZE_X; x++)
 		{
+			float noise_x = (float)x/(float)MAP_SIZE_X;
+			float noise_y = (float)y/(float)MAP_SIZE_Y;
+			float noise_factor = 10.0f;
+			static char* tileSprite = "grass";
+
+			float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, 0.0f, 0, 0, 0, seed); 
+			
+			if(perlin_noise < -0.2) tileSprite = "water";
+			if(perlin_noise > -0.1) tileSprite = "grass";
+			if(perlin_noise > 0.3) tileSprite = "stone";
+
 			float x1 = (float)(x*texture.width);
 			float y1 = (float)(y*texture.height);
 			float x2 = (float)((x+1)*texture.width);
@@ -49,7 +66,7 @@ void fillMap()
 				}
 			};
 
-			Sprite* sprite = hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name="stone" });
+			Sprite* sprite = hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name=tileSprite });
 			getSpriteUV(&tiles[y * MAP_SIZE_X + x], spriteSheet, sprite);
 		}
 	}
