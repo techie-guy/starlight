@@ -87,6 +87,34 @@ void initSpriteSheet()
 	free(textureJsonString);
 }
 
+void getSpriteAnimation(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite, int frame)
+{
+	float x1 = (float)(frame * sprite->spriteWidth)/spriteSheet->width;
+	float x2 = (float)((frame + 1) * sprite->spriteWidth)/spriteSheet->width;
+
+	float y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
+	float y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+
+	quad->vertices[0].texCoord = (vec2s){{x2, y2}};
+	quad->vertices[1].texCoord = (vec2s){{x2, y1}};
+	quad->vertices[2].texCoord = (vec2s){{x1, y1}};
+	quad->vertices[3].texCoord = (vec2s){{x1, y2}};
+}
+
+void getSpriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite)
+{
+	float x1 = (float)(sprite->x * sprite->spriteWidth)/spriteSheet->width;
+	float x2 = (float)((sprite->x + 1) * sprite->spriteWidth)/spriteSheet->width;
+
+	float y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
+	float y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+
+	quad->vertices[0].texCoord = (vec2s){{x2, y2}};
+	quad->vertices[1].texCoord = (vec2s){{x2, y1}};
+	quad->vertices[2].texCoord = (vec2s){{x1, y1}};
+	quad->vertices[3].texCoord = (vec2s){{x1, y2}};
+}
+
 void destroySpriteSheet()
 {
 	size_t i = 0;

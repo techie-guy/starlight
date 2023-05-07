@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VertexAttributes.h"
 #include <cglm/struct.h>
 #include <hashmap.h>
 
@@ -27,4 +28,6 @@ typedef struct
 extern struct hashmap* spriteSheetHashMap;
 
 void initSpriteSheet();
+void getSpriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite);
+void getSpriteAnimation(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite, int frame);
 void destroySpriteSheet();
