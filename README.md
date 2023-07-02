@@ -3,7 +3,7 @@
 Loosely packed Game "Library" written in C
 
 ## Build it
-**If Building on Windows, you need to have a working MSYS2 Installation**
+**If building on Windows, you need to have a working MSYS2 Installation**
 
 Clone this repository recursively to pull in the submodules
 
