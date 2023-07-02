@@ -1,3 +1,3 @@
 # TODO
-- [] Collision Detection
-- [] Documentation
+* [ ] Collision Detection
+* [ ] Better Documentation
