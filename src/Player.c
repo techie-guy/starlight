@@ -4,6 +4,8 @@
 #include "Texture.h"
 #include "SpriteSheet.h"
 #include "Utils.h"
+#include "Window.h"
+#include "hashmap.h"
 
 #if defined(_PLATFORM_NATIVE)
 	#include <glad/gles2.h>

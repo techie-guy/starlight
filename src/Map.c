@@ -122,7 +122,6 @@ void drawMap(const mat4s viewTimesProj)
 void destroyMap()
 {
 	destroyTexture(&texture);
-
 	destroyShaderProgram(&shaderProgram);
 	destroyVertexAttributes(&vertexAttributes);
 }
