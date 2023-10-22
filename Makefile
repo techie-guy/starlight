@@ -3,8 +3,8 @@ PROJECTNAME=mist-lib
 PLATFORM?=native
 BUILDTYPE?=debug
 CC?=
-CFLAGS?=-Wall -DWINDOW_WIDTH=1280 -DWINDOW_HEIGHT=720 -DWINDOW_TITLE=\""Mist Lib\"" -std=gnu17 -I include -I third-party/glad/include -I third-party/stb/include -I third-party/cglm/include -I third-party/cJSON -I third-party/hashmap.c
-LDFLAGS?=-lglfw3
+CFLAGS?=-Wall -DWINDOW_WIDTH=1280 -DWINDOW_HEIGHT=720 -DWINDOW_TITLE=\""Mist Lib\"" -I include -I third-party/glad/include -I third-party/stb/include -I third-party/cglm/include -I third-party/cJSON -I third-party/hashmap.c
+LDFLAGS?=-lglfw -lm
 ASSETSDIR=assets
 EXECUTABLE=$(BINDIR)/$(PROJECTNAME)
 BUILDDIR?=bin
