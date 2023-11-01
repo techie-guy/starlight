@@ -6,6 +6,17 @@
 #include <string.h>
 #include <stdbool.h>
 
+typedef struct
+{
+	bool left;
+	bool right;
+	bool up;
+	bool down;
+	bool space;
+	bool l_ctrl;
+	bool keyPress;
+} InputState;
+
 // Color Codes taken from https://gist.github.com/iamnewton/8754917
 #if defined(_PLATFORM_NATIVE)
   #define COLOR_RESET       "\e[0m"

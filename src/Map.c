@@ -29,6 +29,7 @@ static SpriteSheet* spriteSheet;
 static Quad tiles[MAP_TILE_COUNT];
 
 static GLushort indices[MAP_TILE_COUNT * 6];
+static vec3s tile_size = (vec3s){{0.02f, 0.04f}};
 
 void fillMap()
 {
@@ -51,10 +52,10 @@ void fillMap()
 			if(perlin_noise > -0.1) tileSprite = "grass";
 			if(perlin_noise > 0.3) tileSprite = "stone";
 
-			float x1 = (float)(x*texture.width);
-			float y1 = (float)(y*texture.height);
-			float x2 = (float)((x+1)*texture.width);
-			float y2 = (float)((y+1)*texture.height);
+			float x1 = (float)(x*texture.width*tile_size.x);
+			float y1 = (float)(y*texture.height*tile_size.y);
+			float x2 = (float)((x+1)*texture.width*tile_size.x);
+			float y2 = (float)((y+1)*texture.height*tile_size.y);
 
 			tiles[y * MAP_SIZE_X + x] = (Quad)
 			{
@@ -106,7 +107,7 @@ void drawMap(const mat4s viewTimesProj)
 	bindTexture(&texture);
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
-	transform = glms_scale(transform, (vec3s){{0.5f, 2.0f, 0.0f}});
+	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
 	transform = glms_translate(transform, (vec3s){{0.0f, 0.0f, 0.0f}});
 
 	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&viewTimesProj, &transform}, 2);
