@@ -1,15 +1,7 @@
 #pragma once
 
 #include <cglm/struct.h>
-
-typedef struct
-{
-	bool left;
-	bool right;
-	bool up;
-	bool down;
-	bool keyPress;
-} InputState;
+#include "Utils.h"
 
 void initPlayer(); 
 void updatePlayer(InputState inputState, float deltaTime);

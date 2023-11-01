@@ -3,7 +3,6 @@
 #include "ShaderProgram.h"
 #include "Texture.h"
 #include "SpriteSheet.h"
-#include "Utils.h"
 #include "Window.h"
 #include "hashmap.h"
 
@@ -56,7 +55,7 @@ void initPlayer()
 	initShaderProgram(&shaderProgram, "assets/shaders/player-vertex-shader.glsl", "assets/shaders/player-fragment-shader.glsl");
 
 	position = (vec3s){{5.0f, 5.0f, 0.0f}};
-	scale = (vec3s){{30.0f, 30.0f, 0.0f}};
+	scale = (vec3s){{1.0f, 1.0f, 0.0f}};
 }
 
 void updatePlayer(InputState inputState, float deltaTime)

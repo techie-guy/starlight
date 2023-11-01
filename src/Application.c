@@ -1,11 +1,15 @@
 #include "Application.h"
 
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #define UTILS_DEF
 #include "Utils.h"
 #include "Window.h"
 #include "Player.h"
 #include "SpriteSheet.h"
 #include "Map.h"
+#include "Camera.h"
 
 #if defined(_PLATFORM_NATIVE)
 	#include <glad/gles2.h>
@@ -17,11 +21,10 @@
 #include <cglm/struct.h>
 
 Window window;
+Camera camera;
 
 InputState inputState;
 
-mat4s projectionMatrix = GLMS_MAT4_IDENTITY_INIT;
-mat4s viewMatrix = GLMS_MAT4_IDENTITY_INIT;
 mat4s viewTimesProj = GLMS_MAT4_IDENTITY_INIT;
 
 // Delta Time
@@ -39,6 +42,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S) inputState.down = true;
 		if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A) inputState.left = true;
 		if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) inputState.right = true;
+		if(key == GLFW_KEY_SPACE) inputState.space = true;
+		if(key == GLFW_KEY_LEFT_CONTROL) inputState.l_ctrl = true;
 	}
 	if(action == GLFW_RELEASE)
 	{
@@ -48,6 +53,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S) inputState.down = false;
 		if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A) inputState.left = false;
 		if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) inputState.right = false;
+		if(key == GLFW_KEY_SPACE) inputState.space = false;
+		if(key == GLFW_KEY_LEFT_CONTROL) inputState.l_ctrl = false;
 	}
 }
 
@@ -69,14 +76,22 @@ void init()
 	initPlayer();
 	initMap();
 
-	projectionMatrix = glms_ortho(0.0f, window.width, 0.0f, window.height, 0.001f, 1000.0f);
-	viewMatrix = glms_translate(viewMatrix, (vec3s){{0.0f, 0.0f, -1.0f}});
-	viewTimesProj = glms_mat4_mulN((mat4s*[]){&projectionMatrix, &viewMatrix}, 2);
+	//projectionMatrix = glms_ortho(0.0f, window.width, 0.0f, window.height, 0.001f, 1000.0f);
+	//viewMatrix = glms_translate(viewMatrix, (vec3s){{0.0f, 0.0f, -1.0f}});
+	camera.window_dimensions = (vec2s){{ WINDOW_WIDTH, WINDOW_HEIGHT }};
+	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
+	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
+	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
+	camera.speed = 5.0f;
+	initCamera(&camera);
+
+//	viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 }
 
 void handleInput()
 {
 	updatePlayer(inputState, deltaTime);
+	moveCamera(&camera, inputState, deltaTime);
 }
 
 void renderFrame()
@@ -89,7 +104,12 @@ void renderFrame()
 
 	handleInput();
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	{
+		updateCamera(&camera);
+		viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
+	}
 
 	drawMap(viewTimesProj);
 	drawPlayer(viewTimesProj);
