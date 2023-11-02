@@ -84,8 +84,6 @@ void init()
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
 	camera.speed = 5.0f;
 	initCamera(&camera);
-
-//	viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 }
 
 void handleInput()

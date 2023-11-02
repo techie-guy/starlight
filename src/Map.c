@@ -29,7 +29,7 @@ static SpriteSheet* spriteSheet;
 static Quad tiles[MAP_TILE_COUNT];
 
 static GLushort indices[MAP_TILE_COUNT * 6];
-static vec3s tile_size = (vec3s){{0.02f, 0.04f}};
+static vec3s tile_size = (vec3s){{0.02f, 0.03f}};
 
 void fillMap()
 {
