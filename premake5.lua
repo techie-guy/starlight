@@ -5,6 +5,10 @@ workspace "mist-lib"
 	startproject "mist-lib"
 	outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
+	windowwidth = 1280
+	windowheight = 720
+	windowtitle = "Mist Lib"
+
 prebuildcommands
 {
 	"{COPYDIR} assets %{cfg.buildtarget.directory}"
@@ -19,9 +23,9 @@ project "mist-lib"
 
 	defines
 	{
-		"WINDOW_WIDTH=1280",
-		"WINDOW_HEIGHT=720",
-		"WINDOW_TITLE=\"Mist Lib\"",
+		"WINDOW_WIDTH=%{windowwidth}",
+		"WINDOW_HEIGHT=%{windowheight}",
+		"WINDOW_TITLE=\"%{windowtitle}\"",
 		"_PLATFORM_NATIVE"
 	}
 
