@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "FontRenderer.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -76,6 +77,8 @@ void init()
 	initPlayer();
 	initMap();
 
+	initFontRenderer("assets/fonts/font.ttf", 48);
+
 	//projectionMatrix = glms_ortho(0.0f, window.width, 0.0f, window.height, 0.001f, 1000.0f);
 	//viewMatrix = glms_translate(viewMatrix, (vec3s){{0.0f, 0.0f, -1.0f}});
 	camera.window_dimensions = (vec2s){{ WINDOW_WIDTH, WINDOW_HEIGHT }};
@@ -108,6 +111,8 @@ void renderFrame()
 		updateCamera(&camera);
 		viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 	}
+
+	renderText("OpenGL ;)!", 25.0f, 25.0f, 1.0f, (vec3s){0.5f, 0.8f, 0.2f});
 
 	drawMap(viewTimesProj);
 	drawPlayer(viewTimesProj);
