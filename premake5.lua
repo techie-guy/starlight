@@ -32,7 +32,8 @@ project "mist-lib"
 	links
 	{
 		"glfw",
-		"m"
+		"m",
+		"freetype"
 	}
 
 	includedirs
@@ -41,7 +42,9 @@ project "mist-lib"
 		"third-party/stb/include",
 		"third-party/glad/include",
 		"third-party/hashmap.c",
-		"third-party/cJSON"
+		"third-party/cJSON",
+		"/usr/include/freetype2",
+		"/usr/include/libpng16"
 	}
 
 	files 
