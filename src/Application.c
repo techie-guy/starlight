@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "FontRenderer.h"
+#include <GL/gl.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -71,7 +72,7 @@ void init()
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-
+	
 	initSpriteSheet();
 
 	initPlayer();
@@ -112,10 +113,11 @@ void renderFrame()
 		viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 	}
 
-	renderText("OpenGL ;)!", 25.0f, 25.0f, 1.0f, (vec3s){0.5f, 0.8f, 0.2f});
 
 	drawMap(viewTimesProj);
 	drawPlayer(viewTimesProj);
+
+	renderText("Mist Lib", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 
 	updateWindow(&window);
 }
