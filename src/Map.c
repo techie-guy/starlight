@@ -93,7 +93,7 @@ void initMap()
 {
 	spriteSheet = hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="tiles" });
 
-	initTexture(&texture, spriteSheet->path);
+	initTextureFromFile(&texture, spriteSheet->path);
 	
 	fillMap();
 	initShaderProgram(&shaderProgram, "assets/shaders/map-vertex-shader.glsl", "assets/shaders/map-fragment-shader.glsl");
