@@ -50,7 +50,7 @@ void initPlayer()
 
 	currentSpriteName = spriteSheet->defaultSprite;
 
-	initTexture(&texture, spriteSheet->path);
+	initTextureFromFile(&texture, spriteSheet->path);
 	initVertexAttributes(&vertexAttributes, quad, sizeof(quad), indices, sizeof(indices));
 	initShaderProgram(&shaderProgram, "assets/shaders/player-vertex-shader.glsl", "assets/shaders/player-fragment-shader.glsl");
 
