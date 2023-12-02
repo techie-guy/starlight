@@ -113,8 +113,8 @@ void drawPlayer(const mat4s viewTimesProj)
 
 	uniformMat4(&shaderProgram, "mvp", mvp);
 
-	bindVAO(&vertexAttributes);
-	bindVBO(&vertexAttributes);
+	bindBuffer(&vertexAttributes, VAO);
+	bindBuffer(&vertexAttributes, VBO);
 
 	updateTexCoords();
 

@@ -96,7 +96,7 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
 {
 	bindShaderProgram(&shaderProgram);
 	uniformVec3(&shaderProgram, "textColor", color);
-	bindVAO(&vertexAttributes);
+	bindBuffer(&vertexAttributes, VAO);
 
 	for(char* c = text; *c != '\0'; c++)
 	{
@@ -134,14 +134,14 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
         // render glyph texture over quad
 		bindTexture(&ch.texture);
         // update content of VBO memory
-		bindVBO(&vertexAttributes);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad); 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+		bindBuffer(&vertexAttributes, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad);
         // render quad
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
         // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
         x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
 	}
-	glBindVertexArray(0);
+
+	unbindBuffer(&vertexAttributes, VAO);
 	unbindTexture();
 }
