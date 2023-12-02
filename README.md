@@ -2,6 +2,8 @@
 
 Loosely packed Game "Library" written in C
 
+Font used: [Monocraft](https://github.com/IdreesInc/Monocraft)
+
 ## Build it
 **If building on Windows, you need to have a working MSYS2 Installation**
 
