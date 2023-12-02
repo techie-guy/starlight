@@ -7,7 +7,9 @@ void initTextureFromFile(Texture* texture, const char* texturePath)
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	unsigned char* textureData = stbi_load(texturePath, &texture->width, &texture->height, &texture->channels, 0);
+	int channels;
+
+	unsigned char* textureData = stbi_load(texturePath, &texture->width, &texture->height, &channels, 0);
 	if(!textureData)
 	{
 		log_error("Invalid Texture Data: %s", texturePath);

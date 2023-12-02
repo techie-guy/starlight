@@ -1,6 +1,10 @@
 #include "FontRenderer.h"
 
-#include <glad/gles2.h>
+#if defined(_PLATFORM_NATIVE)
+	#include <glad/gles2.h>
+#elif defined(_PLATFORM_WEB)
+	#include <GLES3/gl3.h>
+#endif
 
 #include <freetype2/ft2build.h>
 #include FT_FREETYPE_H
@@ -123,10 +127,10 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
 			(Quad)
 			{
 				{
-				{{xpos, ypos + h, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-				{{xpos, ypos, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-				{{xpos + w, ypos, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-				{{xpos + w, ypos + h, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}
+				{{xpos, ypos + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+				{{xpos, ypos, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+				{{xpos + w, ypos, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+				{{xpos + w, ypos + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}
 				}
 			}
 		};
