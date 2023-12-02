@@ -22,9 +22,17 @@ typedef struct
 	unsigned int EBO;
 } VertexAttributes;
 
+enum Buffers
+{
+	VAO,
+	VBO,
+	EBO
+};
 
 void initVertexAttributes(VertexAttributes* attrib, void* vertexData, size_t vertexDataSize, void* indexData, size_t indexDataSize);
-void bindVAO(VertexAttributes* attrib);
-void bindVBO(VertexAttributes* attrib);
-void bindEBO(VertexAttributes* attrib);
+void bindBuffer(VertexAttributes* attrib, enum Buffers buffer);
+void unbindBuffer(VertexAttributes* attrib, enum Buffers buffer);
+//void bindVAO(VertexAttributes* attrib);
+//void bindVBO(VertexAttributes* attrib);
+//void bindEBO(VertexAttributes* attrib);
 void destroyVertexAttributes(VertexAttributes* attrib);
