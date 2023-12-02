@@ -115,7 +115,7 @@ void drawMap(const mat4s viewTimesProj)
 	uniformInt(&shaderProgram, "textureSampler", 0);
 	uniformMat4(&shaderProgram, "mvp", mvp);
 
-	bindVAO(&vertexAttributes);
+	bindBuffer(&vertexAttributes, VAO);
 
 	glDrawElements(GL_TRIANGLES, MAP_TILE_COUNT*6, GL_UNSIGNED_SHORT, 0);
 }
