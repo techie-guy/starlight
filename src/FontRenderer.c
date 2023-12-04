@@ -6,7 +6,7 @@
 	#include <GLES3/gl3.h>
 #endif
 
-#include <freetype2/ft2build.h>
+#include <ft2build.h>
 #include FT_FREETYPE_H
 
 #include <stb_ds.h>
@@ -20,7 +20,6 @@
 
 typedef struct
 {
-//	unsigned int textureID;
 	Texture texture;
 	vec2s size;
 	vec2s bearing;
@@ -72,7 +71,7 @@ void initFontRenderer(const char* fontPath, int characterSize)
 		Texture texture;
 		texture.width = face->glyph->bitmap.width;
 		texture.height = face->glyph->bitmap.rows;
-		initTextureFromData(&texture, 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+		initTextureFromData(&texture, 0, GL_R8, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
 
 		// set texture options
 		setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

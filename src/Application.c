@@ -1,6 +1,5 @@
 #include "Application.h"
 #include "FontRenderer.h"
-#include <GL/gl.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -80,8 +79,6 @@ void init()
 
 	initFontRenderer("assets/fonts/font.ttf", 48);
 
-	//projectionMatrix = glms_ortho(0.0f, window.width, 0.0f, window.height, 0.001f, 1000.0f);
-	//viewMatrix = glms_translate(viewMatrix, (vec3s){{0.0f, 0.0f, -1.0f}});
 	camera.window_dimensions = (vec2s){{ WINDOW_WIDTH, WINDOW_HEIGHT }};
 	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
@@ -113,11 +110,10 @@ void renderFrame()
 		viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 	}
 
-
 	drawMap(viewTimesProj);
 	drawPlayer(viewTimesProj);
 
-	renderText("Mist Lib", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 
 	updateWindow(&window);
 }

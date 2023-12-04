@@ -30,7 +30,7 @@ void initTextureFromData(Texture* texture, GLint level, GLint internalformat, GL
 	glGenTextures(1, &texture->textureId);
 	bindTexture(texture);
 
-	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, textureData);	
+	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, textureData);
 }
 
 void setTextureParameteri(GLenum target, GLenum pname, GLint param)
