@@ -1,13 +1,22 @@
+require("premake-emcc/emscripten")
+
 workspace "mist-lib"
-	toolset "clang"
+	startproject "mist-lib"
 
 	configurations { "Debug", "Release" }
-	startproject "mist-lib"
-	outputdir = "%{cfg.buildcfg}-%{cfg.system}"
+	platforms { "Native", "Web" }
 
-	windowwidth = 1280
-	windowheight = 720
-	windowtitle = "Mist Lib"
+	filter { "platforms:Native" }
+		toolset "clang"
+	filter { "platforms:Web" }
+	    toolset "emcc"
+
+	outputdir = "%{cfg.buildcfg}-%{cfg.platform}"
+
+	window_width = 1280
+	window_height = 720
+	window_title = "Mist Lib"
+	assets_dir = "assets"
 
 prebuildcommands
 {
@@ -21,17 +30,66 @@ project "mist-lib"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
 	location "."
 
+	filter { "platforms:Native" }
+		defines
+		{
+			"_PLATFORM_NATIVE"
+		}
+
+		links
+		{
+			"glfw",
+			"m",
+			"freetype"
+		}
+
+		includedirs
+		{
+			"/usr/include/freetype2",
+			"/usr/include/libpng16"
+		}
+	filter{}
+
+	filter { "platforms:Web" }
+		targetextension ".html"
+
+		defines
+		{
+			"_PLATFORM_WEB"
+		}
+
+		links
+		{
+			"glfw3"
+		}
+
+		buildoptions
+		{
+			"-sUSE_FREETYPE=1",
+		}
+
+		linkoptions
+		{
+			"-sUSE_GLFW=3",
+			"-sWASM=1",
+			"-sMAX_WEBGL_VERSION=2",
+			"-sALLOW_MEMORY_GROWTH=1",
+			"-sNO_EXIT_RUNTIME=0",
+			"-sASSERTIONS=1",
+			"--preload-file %{assets_dir}",
+			"--shell-file %{assets_dir}/index.html",
+		}
+	filter {}
+
 	defines
 	{
-		"WINDOW_WIDTH=%{windowwidth}",
-		"WINDOW_HEIGHT=%{windowheight}",
-		"WINDOW_TITLE=\"%{windowtitle}\"",
-		"_PLATFORM_NATIVE"
+		"WINDOW_WIDTH=%{window_width}",
+		"WINDOW_HEIGHT=%{window_height}",
+		"WINDOW_TITLE=\"%{window_title}\"",
 	}
 
 	links
 	{
-		"glfw",
 		"m",
 		"freetype"
 	}
@@ -42,9 +100,7 @@ project "mist-lib"
 		"third-party/stb/include",
 		"third-party/glad/include",
 		"third-party/hashmap.c",
-		"third-party/cJSON",
-		"/usr/include/freetype2",
-		"/usr/include/libpng16"
+		"third-party/cJSON",	
 	}
 
 	files 
