@@ -4,6 +4,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "cimgui.h"
+#include "cimgui_impl_glfw.h"
+#include "cimgui_impl_opengl3.h"
+
 #define UTILS_DEF
 #include "Utils.h"
 #include "Window.h"
@@ -85,6 +89,13 @@ void init()
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
 	camera.speed = 5.0f;
 	initCamera(&camera);
+
+
+	ImGui_CreateContext(NULL);
+    ImGuiIO* io = ImGui_GetIO();
+
+	cImGui_ImplGlfw_InitForOpenGL(window.handle, true);
+	cImGui_ImplOpenGL3_InitEx("#version 100");	
 }
 
 void handleInput()
@@ -101,6 +112,16 @@ void renderFrame()
 		lastFrame = currentFrame;
 	}
 
+	windowPollEvents();
+
+	cImGui_ImplOpenGL3_NewFrame();
+	cImGui_ImplGlfw_NewFrame();
+	ImGui_NewFrame();
+
+	ImGui_ShowDemoWindow(NULL);
+
+	ImGui_Render();
+
 	handleInput();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -115,11 +136,17 @@ void renderFrame()
 
 	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 
-	updateWindow(&window);
+	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
+
+	windowSwapBuffers(&window);
 }
 
 void cleanup()
 {
+	cImGui_ImplOpenGL3_Shutdown();
+	cImGui_ImplGlfw_Shutdown();
+	ImGui_DestroyContext(NULL);
+
 	destroySpriteSheet();
 	destroyMap();
 	destroyPlayer();
