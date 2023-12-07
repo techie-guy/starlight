@@ -10,3 +10,10 @@
 [submodule "premake-emcc"]
 	path = premake-emcc
 	url = https://github.com/TurkeyMan/premake-emscripten.git
+[submodule "third-party/cimgui/dear_bindings"]
+	path = third-party/cimgui/dear_bindings
+	url = https://github.com/dearimgui/dear_bindings.git
+[submodule "third-party/cimgui/imgui"]
+	path = third-party/cimgui/imgui
+	url = https://github.com/ocornut/imgui
+	branch = docking

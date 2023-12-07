@@ -4,3 +4,4 @@ compile_commands.json
 *.session
 *.make
 Makefile
+imgui.ini
