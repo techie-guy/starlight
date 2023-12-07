@@ -38,10 +38,14 @@ void initWindow(Window* window)
 	#endif
 }
 
-void updateWindow(Window* window)
+void windowPollEvents()
+{
+	glfwPollEvents();
+}
+
+void windowSwapBuffers(Window* window)
 {
 	glfwSwapBuffers(window->handle);
-	glfwPollEvents();
 }
 
 int shouldWindowClose(Window* window)

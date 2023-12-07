@@ -12,7 +12,8 @@ typedef struct
 
 void initWindow(Window* window);
 int shouldWindowClose(Window* window);
-void updateWindow(Window* window);
+void windowPollEvents();
+void windowSwapBuffers(Window* window);
 void setWindowKeyCallback(Window* window, GLFWkeyfun callback);
 void changeWindowColor(char colorCode[7], float alpha);
 void destroyWindow(Window* window);
