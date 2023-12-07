@@ -18,17 +18,17 @@ workspace "mist-lib"
 	window_title = "Mist Lib"
 	assets_dir = "assets"
 
-prebuildcommands
-{
-	"{COPYDIR} assets %{cfg.buildtarget.directory}"
-}
-
-project "mist-lib"
+project "mist-lib"	
 	kind "ConsoleApp"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
 	location "."
+
+	prebuildcommands
+	{
+		"{COPYDIR} assets %{cfg.buildtarget.directory}",	
+	}
 
 	filter { "platforms:Native" }
 		defines
@@ -40,7 +40,8 @@ project "mist-lib"
 		{
 			"glfw",
 			"m",
-			"freetype"
+			"freetype",
+			"cimgui",
 		}
 
 		includedirs
@@ -100,7 +101,10 @@ project "mist-lib"
 		"third-party/stb/include",
 		"third-party/glad/include",
 		"third-party/hashmap.c",
-		"third-party/cJSON",	
+		"third-party/cJSON",
+		"third-party/cimgui",
+		"third-party/cimgui/imgui",
+		"third-party/cimgui/imgui/backends",
 	}
 
 	files 
@@ -120,4 +124,42 @@ project "mist-lib"
 	filter "configurations:Release"
 		defines { "NDEBUG" }
 		optimize "On"
+
+project "cimgui"
+	kind "SharedLib"
+	language "C++"
+	targetdir "bin/%{outputdir}/%{prj.name}"
+	objdir "bin/%{outputdir}/%{prj.name}/obj"
+	location "third-party/cimgui"
+	
+	buildoptions
+	{
+		"-fPIC"
+	}
+
+	includedirs
+	{
+		"third-party/cimgui/imgui",
+		"third-party/cimgui/imgui/backends",
+	}
+
+	files
+	{
+		"third-party/cimgui/cimgui.h",
+		"third-party/cimgui/cimgui.cpp",
+		"third-party/cimgui/cimgui_impl_opengl3.h",
+		"third-party/cimgui/cimgui_impl_opengl3.cpp",
+		"third-party/cimgui/cimgui_impl_glfw.h",
+		"third-party/cimgui/cimgui_impl_glfw.cpp",
+		"third-party/cimgui/imgui/imgui.cpp",
+		"third-party/cimgui/imgui/imgui_demo.cpp",
+		"third-party/cimgui/imgui/imgui_draw.cpp",
+		"third-party/cimgui/imgui/imgui_tables.cpp",
+		"third-party/cimgui/imgui/imgui_widgets.cpp",
+		"third-party/cimgui/imgui/imconfig.h",
+		"third-party/cimgui/imgui/backends/imgui_impl_opengl3.h",
+		"third-party/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
+		"third-party/cimgui/imgui/backends/imgui_impl_glfw.h",
+		"third-party/cimgui/imgui/backends/imgui_impl_glfw.cpp",
+	}
 
