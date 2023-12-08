@@ -34,10 +34,8 @@ extern "C"
 #endif
 #include "cimgui.h"
 #ifndef IMGUI_DISABLE
-
-#include <GLFW/glfw3.h>
-//typedef struct GLFWwindow_t GLFWwindow;
-//typedef struct GLFWmonitor_t GLFWmonitor;
+typedef struct GLFWwindow GLFWwindow;
+typedef struct GLFWmonitor GLFWmonitor;
 typedef struct ImDrawData_t ImDrawData;
 
 CIMGUI_IMPL_API bool cImGui_ImplGlfw_InitForOpenGL(GLFWwindow* window, bool install_callbacks);
