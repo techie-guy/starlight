@@ -39,9 +39,6 @@ project "mist-lib"
 		links
 		{
 			"glfw",
-			"m",
-			"freetype",
-			"cimgui",
 		}
 
 		includedirs
@@ -92,7 +89,9 @@ project "mist-lib"
 	links
 	{
 		"m",
-		"freetype"
+		"freetype",
+		"stdc++",
+		"cimgui",
 	}
 
 	includedirs
@@ -114,7 +113,7 @@ project "mist-lib"
 		"third-party/cJSON/cJSON.c", "third-party/cJSON/cJSON.h",
 		"third-party/hashmap.c/hashmap.c", "third-party/hashmap.c/hashmap.h",
 		"third-party/glad/src/glad.c", "third-party/glad/include/glad/gles2.h",
-		"third-party/stb/src/*.c", "third-party/stb/include/*.h",
+		"third-party/stb/src/*.c", "third-party/stb/include/*.h",	
 	}
 
 	filter "configurations:Debug"
@@ -126,16 +125,11 @@ project "mist-lib"
 		optimize "On"
 
 project "cimgui"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
 	location "third-party/cimgui"
-	
-	buildoptions
-	{
-		"-fPIC"
-	}
 
 	includedirs
 	{
