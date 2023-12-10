@@ -4,6 +4,7 @@
 		"name": "player",
 		"path": "assets/textures/player.png",
 		"defaultSprite": "idle",
+		"type": 0,
 		"width": 192,
 		"height": 64,
 		"sprites": [	
@@ -46,9 +47,65 @@
 		]	
 	},
 	{
+		"name": "villan",
+		"path": "assets/textures/villan.png",
+		"defaultSprite": "idle",
+		"type": 0,
+		"width": 416,
+		"height": 32,
+		"sprites": [
+			{
+				"name": "idle",
+				"x": 0,
+				"y": 1,
+				"frameSpeed": 10,
+				"spriteCount": 3,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-right",
+				"x": 4,
+				"y": 1,
+				"frameSpeed": 10,
+				"spriteCount": 2,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-left",
+				"x": 6,
+				"y": 1,
+				"frameSpeed": 10,
+				"spriteCount": 2,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-up",
+				"x": 8,
+				"y": 1,
+				"frameSpeed": 10,
+				"spriteCount": 3,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			},
+			{
+				"name": "move-down",
+				"x": 11,
+				"y": 1,
+				"frameSpeed": 10,
+				"spriteCount": 2,
+				"spriteWidth": 32,
+				"spriteHeight": 32
+			}
+		]	
+	},
+	{
 		"name": "tiles",
 		"path": "assets/textures/tiles.png",
 		"defaultSprite": "grass",
+		"type": 0,
 		"width": 96,
 		"height": 32,
 		"sprites": [
@@ -78,6 +135,52 @@
 				"spriteCount": 1,
 				"spriteWidth": 32,
 				"spriteHeight": 32
+			}
+		]
+	},
+	{
+		"name": "skeleton",
+		"path": "assets/textures/skeleton.png",
+		"defaultSprite": "move-down",
+		"type": 1,
+		"width": 64,
+		"height": 112,
+		"sprites": [
+			{
+				"name": "move-down",
+				"x": 0,
+				"y": 0,
+				"frameSpeed": 15,
+				"spriteCount": 6,
+				"spriteWidth": 15,
+				"spriteHeight": 15
+			},
+			{
+				"name": "move-up",
+				"x": 1,
+				"y": 0,
+				"frameSpeed": 10,
+				"spriteCount": 6,
+				"spriteWidth": 16,
+				"spriteHeight": 15
+			},
+			{
+				"name": "move-left",
+				"x": 2,
+				"y": 0,
+				"frameSpeed": 10,
+				"spriteCount": 6,
+				"spriteWidth": 15,
+				"spriteHeight": 15
+			},
+			{
+				"name": "move-right",
+				"x": 3,
+				"y": 0,
+				"frameSpeed": 10,
+				"spriteCount": 6,
+				"spriteWidth": 15,
+				"spriteHeight": 15
 			}
 		]
 	}
