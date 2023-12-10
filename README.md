@@ -11,17 +11,17 @@ Clone this repository recursively to pull in the submodules
 
 **To Build the Project, You will need:**
 
-* A C Compiler: Clang, GCC or Emscripten
-* make
+* A C and C++ Compiler: Clang, GCC or Emscripten
+* Premake5
 * GLFW3
+* make
 
 You can Download them from your package manager
 
-After cloning the repo recursively, `cd` into it. Then use `make` to build the project.
+After cloning the repo recursively, `cd` into it. Then use `premake5 gmake2` to generate the project build files.
 
-To run the executable use `make run`.
+Run `make help` to get a list of the available configurations.
 
-### Customizing the Build Options
-Use `make PLATFORM=platform`, where 'platform' is `native` or `web` to change the Build Platform.
+Use `make config=CONFIG` to build the project for the required Platform.
 
-Use `make BUILDTYPE=type`, where 'type' is `debug` or `release` to change the Build Type.
+To Run the executable, use `bin/CONFIG/mist-lib/mist-lib`,
