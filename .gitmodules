@@ -8,7 +8,7 @@
 	path = third-party/cJSON
 	url = https://github.com/DaveGamble/cJSON.git
 [submodule "premake-emcc"]
-	path = premake-emcc
+	path = third-party/premake5-emcc
 	url = https://github.com/TurkeyMan/premake-emscripten.git
 [submodule "third-party/cimgui/dear_bindings"]
 	path = third-party/cimgui/dear_bindings
