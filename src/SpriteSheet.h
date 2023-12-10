@@ -15,11 +15,18 @@ typedef struct
 	int spriteHeight;
 } Sprite;
 
+enum SpriteSheetType
+{
+	SHEET_HORIZONTAL = 0,
+	SHEET_VERTICAL = 1,
+};
+
 typedef struct
 {
 	char* name;
 	char* path;
 	char* defaultSprite;
+	enum SpriteSheetType type;
 	int width;
 	int height;
 	struct hashmap* spriteHashMap;
