@@ -1,4 +1,4 @@
-require("premake-emcc/emscripten")
+require("third-party/premake5-emcc/emscripten")
 
 workspace "mist-lib"
 	startproject "mist-lib"
