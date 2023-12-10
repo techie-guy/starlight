@@ -46,7 +46,7 @@ static float speed = 4.0f;
 
 void initPlayer()
 {
-	spriteSheet = hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="player" });
+	spriteSheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="player" });
 
 	currentSpriteName = spriteSheet->defaultSprite;
 
@@ -77,26 +77,27 @@ void updatePlayer(InputState inputState, float deltaTime)
 	}
 	if(inputState.left)
 	{
-		position.x -= speed * deltaTime;
+		position.x += speed * deltaTime;
 		currentSpriteName = "strafe";
 	}
 	if(inputState.right)
 	{
-		position.x += speed * deltaTime;
+		position.x -= speed * deltaTime;
 		currentSpriteName = "strafe";
 	}
 }
 
 void updateTexCoords()
 {
+	Sprite* currentSprite = (Sprite*)hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name=currentSpriteName });
+
 	static int currentFrame = 0;
-	Sprite* sprite = hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name=currentSpriteName });
 
 	currentFrame++;
 
-	int animFrame = (currentFrame/sprite->frameSpeed) % sprite->spriteCount;
+	int animFrame = currentSprite->x + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
 
-	getSpriteAnimation(quad, spriteSheet, sprite, animFrame);
+	getSpriteAnimation(quad, spriteSheet, currentSprite, animFrame);
 }
 
 void drawPlayer(const mat4s viewTimesProj)

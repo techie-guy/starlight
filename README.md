@@ -20,7 +20,7 @@ You can Download them from your package manager
 
 After cloning the repo recursively, `cd` into it. Then use `premake5 gmake2` to generate the project build files.
 
-Run `make help` to get a list of the available configurations.
+Use `make help` to get a list of the available configurations.
 
 Use `make config=CONFIG` to build the project for the required Platform.
 

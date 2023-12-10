@@ -16,8 +16,8 @@
 #include <hashmap.h>
 #include <stb_perlin.h>
 
-#define MAP_SIZE_X 30
-#define MAP_SIZE_Y 30
+#define MAP_SIZE_X 50
+#define MAP_SIZE_Y 50
 #define MAP_TILE_COUNT MAP_SIZE_X * MAP_SIZE_Y
 
 static unsigned int shaderProgram;
@@ -67,7 +67,7 @@ void fillMap()
 				}
 			};
 
-			Sprite* sprite = hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name=tileSprite });
+			Sprite* sprite = (Sprite*)hashmap_get(spriteSheet->spriteHashMap, &(Sprite){ .name=tileSprite });
 			getSpriteUV(&tiles[y * MAP_SIZE_X + x], spriteSheet, sprite);
 		}
 	}
@@ -91,7 +91,7 @@ void fillMap()
 
 void initMap()
 {
-	spriteSheet = hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="tiles" });
+	spriteSheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="tiles" });
 
 	initTextureFromFile(&texture, spriteSheet->path);
 	
