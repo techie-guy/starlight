@@ -49,6 +49,8 @@ void initSpriteSheet()
 		char* sheetDefaultSprite = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "defaultSprite")->valuestring);
 		int sheetWidth = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "width")->valueint;
 		int sheetHeight = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "height")->valueint;
+		int sheetType = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "type")->valueint;
+
 		struct hashmap* spriteHashMap = hashmap_new(sizeof(Sprite), 0, 0, 0, spriteHash, spriteCompare, NULL, NULL);
 
 		cJSON* spritesJson = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "sprites");
@@ -77,6 +79,7 @@ void initSpriteSheet()
 		hashmap_set(spriteSheetHashMap, &(SpriteSheet){
 			.name=sheetName,
 			.path=sheetPath,
+			.type=sheetType,
 			.defaultSprite=sheetDefaultSprite,
 			.width=sheetWidth, .height=sheetHeight,
 			.spriteHashMap=spriteHashMap
@@ -89,11 +92,23 @@ void initSpriteSheet()
 
 void getSpriteAnimation(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite, int frame)
 {
-	float x1 = (float)(frame * sprite->spriteWidth)/spriteSheet->width;
-	float x2 = (float)((frame + 1) * sprite->spriteWidth)/spriteSheet->width;
+	float x1, x2, y1, y2;
 
-	float y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
-	float y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+	if(spriteSheet->type == SHEET_HORIZONTAL)
+	{
+		x1 = (float)(frame * sprite->spriteWidth)/spriteSheet->width;
+		x2 = (float)((frame + 1) * sprite->spriteWidth)/spriteSheet->width;
+		y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
+		y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+	}
+	if(spriteSheet->type == SHEET_VERTICAL)
+	{
+		x1 = (float)(sprite->x * sprite->spriteWidth)/spriteSheet->width;
+		x2 = (float)((sprite->x + 1) * sprite->spriteWidth)/spriteSheet->width;
+		y1 = (float)(frame * sprite->spriteHeight)/spriteSheet->height;
+		y2 = (float)((frame + 1) * sprite->spriteHeight)/spriteSheet->height;
+	}
+	
 
 	quad->vertices[0].texCoord = (vec2s){{x2, y2}};
 	quad->vertices[1].texCoord = (vec2s){{x2, y1}};
