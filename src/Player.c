@@ -46,7 +46,7 @@ static float speed = 4.0f;
 
 void initPlayer()
 {
-	spriteSheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="player" });
+	spriteSheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="villan" });
 
 	currentSpriteName = spriteSheet->defaultSprite;
 
@@ -78,12 +78,12 @@ void updatePlayer(InputState inputState, float deltaTime)
 	if(inputState.left)
 	{
 		position.x += speed * deltaTime;
-		currentSpriteName = "strafe";
+		currentSpriteName = "move-left";
 	}
 	if(inputState.right)
 	{
 		position.x -= speed * deltaTime;
-		currentSpriteName = "strafe";
+		currentSpriteName = "move-right";
 	}
 }
 
@@ -95,7 +95,11 @@ void updateTexCoords()
 
 	currentFrame++;
 
-	int animFrame = currentSprite->x + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
+	int animFrame;
+	if(spriteSheet->type == SHEET_HORIZONTAL)
+		animFrame = currentSprite->x + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
+	if(spriteSheet->type == SHEET_VERTICAL)
+		animFrame = currentSprite->y + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
 
 	getSpriteAnimation(quad, spriteSheet, currentSprite, animFrame);
 }
