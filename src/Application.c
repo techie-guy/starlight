@@ -15,6 +15,7 @@
 #include "SpriteSheet.h"
 #include "Map.h"
 #include "Camera.h"
+#include "ECS.h"
 
 #if defined(_PLATFORM_NATIVE)
 	#include <glad/gles2.h>
@@ -74,7 +75,7 @@ void init()
 	setWindowKeyCallback(&window, keyCallback);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+	glEnable(GL_BLEND);	
 	
 	initSpriteSheet();
 
@@ -143,6 +144,8 @@ void renderFrame()
 
 void cleanup()
 {
+	destroyECS();
+
 	cImGui_ImplOpenGL3_Shutdown();
 	cImGui_ImplGlfw_Shutdown();
 	ImGui_DestroyContext(NULL);
