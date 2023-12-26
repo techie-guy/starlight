@@ -14,7 +14,6 @@ Entity* addEntity(char* tag)
 	e->id = total_entities++;
 	e->tag = tag;
 	e->is_active = true;
-	e->component_list.entity_id = e->id;
 
 	arrput(entities, e);
 
