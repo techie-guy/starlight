@@ -32,9 +32,19 @@ void initScene()
 	current_scene->init();
 }
 
-void updateScene()
+void updateScene(float deltatime)
 {
-	current_scene->update();
+	current_scene->update(deltatime);
+}
+
+void renderScene()
+{
+	current_scene->render();
+}
+
+void sceneProcessInput(InputState input_state, float deltatime)
+{
+	current_scene->process_input(input_state, deltatime);
 }
 
 void destroyScene()
