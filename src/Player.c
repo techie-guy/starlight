@@ -1,9 +1,12 @@
 #include "Player.h"
+#include "Components.h"
 #include "VertexAttributes.h"
 #include "ShaderProgram.h"
 #include "Texture.h"
 #include "SpriteSheet.h"
 #include "Window.h"
+#include "ECS.h"
+
 #include "hashmap.h"
 
 #if defined(_PLATFORM_NATIVE)
@@ -44,8 +47,17 @@ static vec3s position;
 static vec3s scale;
 static float speed = 4.0f;
 
+Entity* player;
+
 void initPlayer()
 {
+	player = addEntity("player");
+
+	position = (vec3s){{5.0f, 5.0f, 0.0f}};
+	scale = (vec3s){{1.0f, 1.0f, 0.0f}};
+
+	player->component_list.transform_component = (Component_Transform){ .position=position, .scale=scale };
+
 	spriteSheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="villan" });
 
 	currentSpriteName = spriteSheet->defaultSprite;
@@ -53,9 +65,6 @@ void initPlayer()
 	initTextureFromFile(&texture, spriteSheet->path);
 	initVertexAttributes(&vertexAttributes, quad, sizeof(quad), indices, sizeof(indices));
 	initShaderProgram(&shaderProgram, "assets/shaders/player-vertex-shader.glsl", "assets/shaders/player-fragment-shader.glsl");
-
-	position = (vec3s){{5.0f, 5.0f, 0.0f}};
-	scale = (vec3s){{1.0f, 1.0f, 0.0f}};
 }
 
 void updatePlayer(InputState inputState, float deltaTime)
