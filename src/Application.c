@@ -1,5 +1,4 @@
 #include "Application.h"
-#include "FontRenderer.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -11,11 +10,11 @@
 #define UTILS_DEF
 #include "Utils.h"
 #include "Window.h"
-#include "Player.h"
 #include "SpriteSheet.h"
-#include "Map.h"
-#include "Camera.h"
+#include "FontRenderer.h"
 #include "ECS.h"
+#include "Scene.h"
+#include "ScenePlay.h"
 
 #if defined(_PLATFORM_NATIVE)
 	#include <glad/gles2.h>
@@ -27,16 +26,13 @@
 #include <cglm/struct.h>
 
 Window window;
-Camera camera;
 
 InputState inputState;
 
-mat4s viewTimesProj = GLMS_MAT4_IDENTITY_INIT;
-
 // Delta Time
-float deltaTime = 0.0f;
-float currentFrame = 0.0f;
-float lastFrame = 0.0f;
+float deltatime = 0.0f;
+float current_frame = 0.0f;
+float last_frame = 0.0f;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -74,46 +70,38 @@ void init()
 	changeWindowColor("#034694", 1.0f);
 	setWindowKeyCallback(&window, keyCallback);
 
+	addScene(&ScenePlay);
+
+	changeScene("ScenePlay");
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);	
+	glEnable(GL_BLEND);
 	
 	initSpriteSheet();
-
-	initPlayer();
-	initMap();
-
 	initFontRenderer("assets/fonts/font.ttf", 48);
 
-	camera.window_dimensions = (vec2s){{ WINDOW_WIDTH, WINDOW_HEIGHT }};
-	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
-	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
-	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
-	camera.speed = 5.0f;
-	initCamera(&camera);
+	initScene();
 
 
 	ImGui_CreateContext(NULL);
     ImGuiIO* io = ImGui_GetIO();
 
 	cImGui_ImplGlfw_InitForOpenGL(window.handle, true);
-	cImGui_ImplOpenGL3_InitEx("#version 100");	
-}
-
-void handleInput()
-{
-	updatePlayer(inputState, deltaTime);
-	moveCamera(&camera, inputState, deltaTime);
+	cImGui_ImplOpenGL3_InitEx("#version 100");
 }
 
 void renderFrame()
 {
 	{
-		currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		current_frame = glfwGetTime();
+		deltatime = current_frame - last_frame;
+		last_frame = current_frame;
 	}
 
 	windowPollEvents();
+	sceneProcessInput(inputState, deltatime);
+
+	updateScene(deltatime);
 
 	cImGui_ImplOpenGL3_NewFrame();
 	cImGui_ImplGlfw_NewFrame();
@@ -123,19 +111,9 @@ void renderFrame()
 
 	ImGui_Render();
 
-	handleInput();
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	{
-		updateCamera(&camera);
-		viewTimesProj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
-	}
-
-	drawMap(viewTimesProj);
-	drawPlayer(viewTimesProj);
-
-	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+	renderScene();
 
 	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
 
@@ -145,14 +123,14 @@ void renderFrame()
 void cleanup()
 {
 	destroyECS();
+	destroyScene();
+
+	destroySpriteSheet();
 
 	cImGui_ImplOpenGL3_Shutdown();
 	cImGui_ImplGlfw_Shutdown();
 	ImGui_DestroyContext(NULL);
 
-	destroySpriteSheet();
-	destroyMap();
-	destroyPlayer();
 	destroyWindow(&window);
 }
 
