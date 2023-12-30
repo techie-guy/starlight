@@ -945,14 +945,14 @@ CIMGUI_API void cimgui::ImGui_Bullet(void)
     ::ImGui::Bullet();
 }
 
-CIMGUI_API void cimgui::ImGui_Image(ImTextureID user_texture_id, cimgui::ImVec2 size)
+CIMGUI_API void cimgui::ImGui_Image(ImTextureID user_texture_id, cimgui::ImVec2 image_size)
 {
-    ::ImGui::Image(user_texture_id, ConvertToCPP_ImVec2(size));
+    ::ImGui::Image(user_texture_id, ConvertToCPP_ImVec2(image_size));
 }
 
-CIMGUI_API void cimgui::ImGui_ImageEx(ImTextureID user_texture_id, cimgui::ImVec2 size, cimgui::ImVec2 uv0, cimgui::ImVec2 uv1, cimgui::ImVec4 tint_col, cimgui::ImVec4 border_col)
+CIMGUI_API void cimgui::ImGui_ImageEx(ImTextureID user_texture_id, cimgui::ImVec2 image_size, cimgui::ImVec2 uv0, cimgui::ImVec2 uv1, cimgui::ImVec4 tint_col, cimgui::ImVec4 border_col)
 {
-    ::ImGui::Image(user_texture_id, ConvertToCPP_ImVec2(size), ConvertToCPP_ImVec2(uv0), ConvertToCPP_ImVec2(uv1), ConvertToCPP_ImVec4(tint_col), ConvertToCPP_ImVec4(border_col));
+    ::ImGui::Image(user_texture_id, ConvertToCPP_ImVec2(image_size), ConvertToCPP_ImVec2(uv0), ConvertToCPP_ImVec2(uv1), ConvertToCPP_ImVec4(tint_col), ConvertToCPP_ImVec4(border_col));
 }
 
 CIMGUI_API bool cimgui::ImGui_ImageButton(const char* str_id, ImTextureID user_texture_id, cimgui::ImVec2 image_size)
@@ -3691,11 +3691,6 @@ CIMGUI_API void cimgui::ImGui_CaptureKeyboardFromApp(bool want_capture_keyboard)
 CIMGUI_API void cimgui::ImGui_CaptureMouseFromApp(bool want_capture_mouse)
 {
     ::ImGui::CaptureMouseFromApp(want_capture_mouse);
-}
-
-CIMGUI_API void cimgui::ImGui_CalcListClipping(int items_count, float items_height, int* out_items_display_start, int* out_items_display_end)
-{
-    ::ImGui::CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end);
 }
 
 #endif // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS

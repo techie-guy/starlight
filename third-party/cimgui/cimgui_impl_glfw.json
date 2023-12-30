@@ -248,6 +248,54 @@
             }
         },
         {
+            "name": "cImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback",
+            "original_fully_qualified_name": "ImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback",
+            "return_type": {
+                "declaration": "void",
+                "description": {
+                    "kind": "Builtin",
+                    "builtin_type": "void"
+                }
+            },
+            "arguments": [
+                {
+                    "name": "canvas_selector",
+                    "type": {
+                        "declaration": "const char*",
+                        "description": {
+                            "kind": "Pointer",
+                            "inner_type": {
+                                "kind": "Builtin",
+                                "builtin_type": "char",
+                                "storage_classes": [
+                                    "const"
+                                ]
+                            }
+                        }
+                    },
+                    "is_array": false,
+                    "is_varargs": false,
+                    "is_instance_pointer": false
+                }
+            ],
+            "is_default_argument_helper": false,
+            "is_manual_helper": false,
+            "is_imstr_helper": false,
+            "has_imstr_helper": false,
+            "is_unformatted_helper": false,
+            "conditionals": [
+                {
+                    "condition": "ifdef",
+                    "expression": "__EMSCRIPTEN__"
+                }
+            ],
+            "is_internal": false,
+            "source_location": {
+                "filename": "imgui_impl_glfw.h",
+                "line": 40
+            }
+        },
+        {
             "name": "cImGui_ImplGlfw_InstallCallbacks",
             "original_fully_qualified_name": "ImGui_ImplGlfw_InstallCallbacks",
             "return_type": {
@@ -290,7 +338,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 41
+                "line": 46
             }
         },
         {
@@ -329,7 +377,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 42
+                "line": 47
             }
         },
         {
@@ -371,7 +419,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 46
+                "line": 51
             }
         },
         {
@@ -429,7 +477,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 49
+                "line": 54
             }
         },
         {
@@ -484,7 +532,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 50
+                "line": 55
             }
         },
         {
@@ -552,7 +600,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 51
+                "line": 56
             }
         },
         {
@@ -630,7 +678,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 52
+                "line": 57
             }
         },
         {
@@ -695,7 +743,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 53
+                "line": 58
             }
         },
         {
@@ -786,7 +834,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 54
+                "line": 59
             }
         },
         {
@@ -838,7 +886,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 55
+                "line": 60
             }
         },
         {
@@ -890,7 +938,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 56
+                "line": 61
             }
         }
     ]
