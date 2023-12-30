@@ -42,12 +42,20 @@ void renderScene()
 	current_scene->render();
 }
 
-void sceneProcessInput(InputState input_state, float deltatime)
+void sceneProcessInput(InputSystem input_system, float deltatime)
 {
-	current_scene->process_input(input_state, deltatime);
+	current_scene->process_input(input_system, deltatime);
 }
 
 void destroyScene()
 {
 	current_scene->destroy();
+}
+
+void destroyScenes()
+{
+	for(int i = 0; i < shlen(scenes); i++)
+	{
+		scenes[i].value->destroy();
+	}
 }

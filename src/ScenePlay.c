@@ -18,6 +18,9 @@
 #endif
 
 #include <cglm/struct.h>
+#include "cimgui.h"
+
+static InputState input_state;
 
 static Camera camera;
 static mat4s view_times_proj = GLMS_MAT4_IDENTITY_INIT;
@@ -123,18 +126,7 @@ static void update(float deltatime)
 {
 	updateCamera(&camera);
 	view_times_proj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
-}
 
-static void render()
-{
-	drawMap(view_times_proj);
-	draw_player(view_times_proj);
-
-	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
-}
-
-static void process_input(InputState input_state, float deltatime)
-{
 	if(!input_state.keyPress)
 	{
 		player_current_sprite_name = player_spritesheet->defaultSprite;
@@ -162,6 +154,60 @@ static void process_input(InputState input_state, float deltatime)
 	}
 
 	moveCamera(&camera, input_state, deltatime);
+}
+
+static void render()
+{
+//	ImGui_ShowDemoWindow(NULL);	
+
+	drawMap(view_times_proj);
+	draw_player(view_times_proj);
+
+	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+}
+
+static void process_input(InputSystem input_system, float deltatime)
+{
+	input_state.up = input_system.key_pressed_data[GLFW_KEY_UP] || input_system.key_pressed_data[GLFW_KEY_W];
+	input_state.down = input_system.key_pressed_data[GLFW_KEY_DOWN] || input_system.key_pressed_data[GLFW_KEY_S];
+	input_state.left = input_system.key_pressed_data[GLFW_KEY_LEFT] || input_system.key_pressed_data[GLFW_KEY_A];
+	input_state.right = input_system.key_pressed_data[GLFW_KEY_RIGHT] || input_system.key_pressed_data[GLFW_KEY_D];
+	input_state.space = input_system.key_pressed_data[GLFW_KEY_SPACE];
+	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
+
+	// Joystick
+	ImVec2 joystick_button_size = {40.0f, 40.0f};
+
+    ImGui_SetNextWindowPos((ImVec2){50, ImGui_GetIO()->DisplaySize.y - 200}, ImGuiCond_Always);
+
+	ImGui_Begin("Input", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	{
+		ImGui_BeginGroup();
+		ImGui_Text("    ");
+		ImGui_SameLine();
+
+		if(ImGui_ButtonEx("", joystick_button_size)) input_state.up = true;
+		else if(ImGui_IsItemActive()) input_state.up = true;
+
+		if(ImGui_ButtonEx("", joystick_button_size)) input_state.left = true;
+		else if(ImGui_IsItemActive()) input_state.left = true;
+
+		ImGui_SameLine();
+		if(ImGui_ButtonEx("", joystick_button_size)) input_state.l_ctrl = true;
+		else if(ImGui_IsItemActive()) input_state.l_ctrl = true;
+
+		ImGui_SameLine();
+		if(ImGui_ButtonEx("", joystick_button_size)) input_state.right = true;
+		else if(ImGui_IsItemActive()) input_state.right = true;
+
+		ImGui_Text("    ");
+		ImGui_SameLine();
+		if(ImGui_ButtonEx("", joystick_button_size)) input_state.down = true;
+		else if(ImGui_IsItemActive()) input_state.down = true;
+
+		ImGui_EndGroup();
+	}
+	ImGui_End();
 }
 
 static void activate()

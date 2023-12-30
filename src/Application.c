@@ -27,38 +27,10 @@
 
 Window window;
 
-InputState inputState;
-
 // Delta Time
 float deltatime = 0.0f;
 float current_frame = 0.0f;
 float last_frame = 0.0f;
-
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if(action == GLFW_PRESS)
-	{
-		inputState.keyPress = true;
-
-		if(key == GLFW_KEY_UP || key == GLFW_KEY_W) inputState.up = true;
-		if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S) inputState.down = true;
-		if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A) inputState.left = true;
-		if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) inputState.right = true;
-		if(key == GLFW_KEY_SPACE) inputState.space = true;
-		if(key == GLFW_KEY_LEFT_CONTROL) inputState.l_ctrl = true;
-	}
-	if(action == GLFW_RELEASE)
-	{
-		inputState.keyPress = false;
-
-		if(key == GLFW_KEY_UP || key == GLFW_KEY_W) inputState.up = false;
-		if(key == GLFW_KEY_DOWN || key == GLFW_KEY_S) inputState.down = false;
-		if(key == GLFW_KEY_LEFT || key == GLFW_KEY_A) inputState.left = false;
-		if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) inputState.right = false;
-		if(key == GLFW_KEY_SPACE) inputState.space = false;
-		if(key == GLFW_KEY_LEFT_CONTROL) inputState.l_ctrl = false;
-	}
-}
 
 void init()
 {
@@ -68,7 +40,6 @@ void init()
 
 	initWindow(&window);
 	changeWindowColor("#034694", 1.0f);
-	setWindowKeyCallback(&window, keyCallback);
 
 	addScene(&ScenePlay);
 
@@ -82,9 +53,25 @@ void init()
 
 	initScene();
 
-
+	// Init ImGui
 	ImGui_CreateContext(NULL);
     ImGuiIO* io = ImGui_GetIO();
+
+	
+	ImVector_ImWchar ranges;
+	ImVector_Construct(&ranges);
+	ImFontGlyphRangesBuilder builder;
+	memset(&builder, 0, sizeof(builder));
+
+	ImFontGlyphRangesBuilder_Clear(&builder);
+	ImFontGlyphRangesBuilder_AddRanges(&builder, ImFontAtlas_GetGlyphRangesDefault(io->Fonts));
+	ImFontGlyphRangesBuilder_AddText(&builder, "", NULL);
+	ImFontGlyphRangesBuilder_BuildRanges(&builder, &ranges);
+	
+	ImFontAtlas_AddFontFromFileTTF(io->Fonts, "assets/fonts/font.ttf", 20, NULL, ranges.Data);
+	ImFontAtlas_Build(io->Fonts);
+
+	ImVector_Destruct(&ranges);
 
 	cImGui_ImplGlfw_InitForOpenGL(window.handle, true);
 	cImGui_ImplOpenGL3_InitEx("#version 100");
@@ -99,21 +86,19 @@ void renderFrame()
 	}
 
 	windowPollEvents();
-	sceneProcessInput(inputState, deltatime);
 
 	updateScene(deltatime);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cImGui_ImplOpenGL3_NewFrame();
 	cImGui_ImplGlfw_NewFrame();
 	ImGui_NewFrame();
 
-	ImGui_ShowDemoWindow(NULL);
+	sceneProcessInput(window.input_system, deltatime);
+	renderScene();
 
 	ImGui_Render();
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	renderScene();
 
 	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
 
@@ -123,7 +108,7 @@ void renderFrame()
 void cleanup()
 {
 	destroyECS();
-	destroyScene();
+	destroyScenes();
 
 	destroySpriteSheet();
 

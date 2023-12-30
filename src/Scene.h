@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "Window.h"
 
 typedef struct
 {
@@ -11,7 +12,7 @@ typedef struct
 	void (*deactivate)();
 	void (*update)(float);
 	void (*render)();
-	void (*process_input)(InputState, float);
+	void (*process_input)(InputSystem, float);
 } Scene;
 
 void addScene(Scene* scene);
@@ -20,5 +21,6 @@ void changeScene(char* scene_name);
 void initScene();
 void updateScene(float deltatime);
 void renderScene();
-void sceneProcessInput(InputState input_state, float deltatime);
+void sceneProcessInput(InputSystem input_system, float deltatime);
 void destroyScene();
+void destroyScenes();

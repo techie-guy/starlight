@@ -7,14 +7,26 @@
 #include "Window.h"
 #include "Utils.h"
 
-void errorCallbackGLFW(int errorCode, const char* errorDescription)
+static Window* current_window = NULL;
+
+static void GLFW_error_callback(int errorCode, const char* errorDescription)
 {
 	log_error("GLFW Error: [Error Code]: %d, [Error Description]: \n%s\n", errorCode, errorDescription);
 }
 
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if(key >= 0 && key < GLFW_KEY_LAST)
+	{
+		current_window->input_system.key_pressed_data[key] = (action == GLFW_PRESS) || (action == GLFW_REPEAT);
+	}
+}
+
 void initWindow(Window* window)
 {
-	glfwSetErrorCallback(errorCallbackGLFW);
+	current_window = window;
+
+	glfwSetErrorCallback(GLFW_error_callback);
 
 	glfwInit();
 	
@@ -36,6 +48,8 @@ void initWindow(Window* window)
 	#if defined(_PLATFORM_NATIVE)
 		gladLoadGLES2(glfwGetProcAddress);
 	#endif
+
+	glfwSetKeyCallback(window->handle, key_callback);
 }
 
 void windowPollEvents()
@@ -69,11 +83,6 @@ void changeWindowColor(char colorCode[7], float alpha)
 	int hexCode = strtol(hexString, NULL, 16);
 
 	glClearColor(((hexCode >> 16) & 0xFF)/255.0f, ((hexCode >> 8) & 0xFF)/255.0f, ((hexCode) & 0xFF)/255.0f, alpha);
-}
-
-void setWindowKeyCallback(Window* window, GLFWkeyfun callback)
-{
-	glfwSetKeyCallback(window->handle, callback);
 }
 
 void destroyWindow(Window* window)
