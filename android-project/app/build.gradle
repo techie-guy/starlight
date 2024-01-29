@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 30 //
+    ndkVersion '25.1.8937393'
+
+    defaultConfig {	
+        applicationId = 'io.github.techieguy.mistlib'
+        minSdkVersion 30
+        targetSdkVersion 30
+		externalNativeBuild {
+            ndkBuild {
+                arguments 'PREMAKE_ANDROIDNDK_PLATFORMS+=Android'
+            }
+        }
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
+
+			externalNativeBuild {
+				ndkBuild {
+					arguments 'PREMAKE_ANDROIDNDK_CONFIGURATIONS:=Release'
+            	}
+        	}
+		}
+		debug {
+            debuggable true
+
+            externalNativeBuild {
+                ndkBuild {
+                    arguments 'PREMAKE_ANDROIDNDK_CONFIGURATIONS:=Debug'
+                }
+            }
+        }
+    }
+	externalNativeBuild {
+        ndkBuild {
+            path file('../../mist-lib.wks.Android.mk')
+        }
+    }
+    lintOptions {
+		abortOnError false
+    }
+	namespace 'io.github.techieguy.mistlib'
+}
