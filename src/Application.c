@@ -16,11 +16,16 @@
 #include "Scene.h"
 #include "ScenePlay.h"
 
-#if defined(_PLATFORM_NATIVE)
+#if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
 	#include <emscripten.h>
 	#include <GLES3/gl3.h>
+#elif defined(_PLATFORM_ANDROID)
+	#include <GLES3/gl3.h>
+	#include <android/native_window.h>
+	#define GLFW_EXPOSE_NATIVE_ANDROID
+	#include <GLFW/glfw3native.h>
 #endif
 
 #include <cglm/struct.h>
@@ -34,9 +39,9 @@ float last_frame = 0.0f;
 
 void init()
 {
+	window.title = WINDOW_TITLE;
 	window.width = WINDOW_WIDTH;
 	window.height = WINDOW_HEIGHT;
-	window.title = WINDOW_TITLE;
 
 	initWindow(&window);
 	changeWindowColor("#034694", 1.0f);
@@ -47,17 +52,18 @@ void init()
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-	
+		
 	initSpriteSheet();
-	initFontRenderer("assets/fonts/font.ttf", 48);
+//	initFontRenderer("assets/fonts/font.ttf", 48);
 
-	initScene();
+	initScene(&window);
 
 	// Init ImGui
 	ImGui_CreateContext(NULL);
     ImGuiIO* io = ImGui_GetIO();
 
-	
+	io->IniFilename = "/data/data/io.github.techieguy.mistlib/files/imgui.ini";
+
 	ImVector_ImWchar ranges;
 	ImVector_Construct(&ranges);
 	ImFontGlyphRangesBuilder builder;
@@ -123,12 +129,12 @@ void runApplication()
 {
 	init();
 	
-#if defined(_PLATFORM_NATIVE)
+#if !defined(_PLATFORM_WEB)
 	while(!shouldWindowClose(&window))
 	{
 		renderFrame();
 	}
-#elif defined(_PLATFORM_WEB)
+#else
 	emscripten_set_main_loop(renderFrame, 0, true);
 #endif
 

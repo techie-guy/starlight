@@ -6,6 +6,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+#if defined(_PLATFORM_ANDROID)
+	#include <android/log.h>
+	#define LOG(...) ((void)__android_log_print(ANDROID_LOG_INFO, "MIST_LIB", __VA_ARGS__))	
+#else
+	#define LOG printf
+#endif
+
 typedef struct
 {
 	bool left;
@@ -18,7 +25,7 @@ typedef struct
 } InputState;
 
 // Color Codes taken from https://gist.github.com/iamnewton/8754917
-#if defined(_PLATFORM_NATIVE)
+#if defined(_PLATFORM_DESKTOP)
   #define COLOR_RESET       "\e[0m"
   #define COLOR_RED         "\e[0;31m"
   #define COLOR_GREEN       "\e[0;32m"
@@ -45,10 +52,10 @@ typedef struct
 #endif
 
 // Printing Macros
-#define log_debug(...) printf("%s[Debug]: %s", COLOR_BOLD_WHITE, COLOR_WHITE); printf(__VA_ARGS__); printf(COLOR_RESET)
-#define log_info(...) printf("%s[Info]: %s", COLOR_BOLD_WHITE, COLOR_BLUE); printf(__VA_ARGS__); printf(COLOR_RESET)
-#define log_warn(...) printf("%s[Warning]: %s", COLOR_BOLD_WHITE, COLOR_YELLOW); printf(__VA_ARGS__); printf(COLOR_RESET)
-#define log_error(...) printf("%s[Error]: %s", COLOR_BOLD_WHITE, COLOR_RED); printf(__VA_ARGS__); printf(COLOR_RESET)
+#define log_debug(...) LOG("%s[Debug]: %s", COLOR_BOLD_WHITE, COLOR_WHITE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_info(...) LOG("%s[Info]: %s", COLOR_BOLD_WHITE, COLOR_BLUE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_warn(...) LOG("%s[Warning]: %s", COLOR_BOLD_WHITE, COLOR_YELLOW); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_error(...) LOG("%s[Error]: %s", COLOR_BOLD_WHITE, COLOR_RED); LOG(__VA_ARGS__); LOG(COLOR_RESET)
 
 // Functions
 char* readFile(const char* filepath);
@@ -56,11 +63,13 @@ char* readFile(const char* filepath);
 #ifdef UTILS_DEF
 char* readFile(const char* filepath)
 {
+#if !defined(_PLATFORM_ANDROID)
 	if(access(filepath, F_OK) != 0)
 	{
 		log_error("File %s does not exist!\n", filepath);
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	char* buffer = "";
 	long length;
@@ -86,5 +95,22 @@ char* readFile(const char* filepath)
 	}
 
 	return buffer;
+/*
+#else
+	AAssetManager* asset_manager = glfwGetAndroidApp()->activity->assetManager;
+	AAsset* file = AAssetManager_open(asset_manager, filepath, AASSET_MODE_BUFFER);
+	
+	size_t file_length = AAsset_getLength(file);
+
+	char* buffer = NULL;
+	arrsetlen(buffer, file_length);
+
+	AAsset_read(file, buffer, file_length);
+	
+	AAsset_close(file);
+
+	return buffer;
+#endif
+*/
 }
 #endif

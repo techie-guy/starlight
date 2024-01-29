@@ -20,7 +20,7 @@ void updateCamera(Camera* camera)
 
 	// Make this customisable
 //	camera->projection_matrix = glms_ortho(0.0f, camera->window_dimensions.x, 0.0f, camera->window_dimensions.y, 0.001f, 1000.0f);
-	camera->projection_matrix = glms_perspective(glm_rad(45.0f), (float)camera->window_dimensions.x/camera->window_dimensions.y, 0.1f, 100.0f);
+	camera->projection_matrix = glms_perspective(glm_rad(45.0f), (float)(camera->window_dimensions.x/camera->window_dimensions.y), 0.1f, 100.0f);
 //	camera->view_matrix = glms_translate(camera->view_matrix, (vec3s){{0.0f, 0.0f, -1.0f}});
 //	camera->view_matrix = glms_translate(camera->view_matrix, camera->position);
 	camera->view_matrix = glms_lookat(camera->position, glms_vec3_add(camera->position, camera_front), camera_up);
