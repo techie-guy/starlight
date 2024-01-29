@@ -1,10 +1,15 @@
 #include "FontRenderer.h"
 
-#if defined(_PLATFORM_NATIVE)
+#if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
+	#include <emscripten.h>
+	#include <GLES3/gl3.h>
+#elif defined(_PLATFORM_ANDROID)
 	#include <GLES3/gl3.h>
 #endif
+
+#if !defined(_PLATFORM_ANDROID)
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -148,3 +153,4 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
 	unbindBuffer(&vertexAttributes, VAO);
 	unbindTexture();
 }
+#endif

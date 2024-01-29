@@ -27,9 +27,9 @@ void changeScene(char* scene_name)
 	current_scene->activate();
 }
 
-void initScene()
+void initScene(Window* window)
 {
-	current_scene->init();
+	current_scene->init(window);
 }
 
 void updateScene(float deltatime)

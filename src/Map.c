@@ -5,10 +5,13 @@
 #include "SpriteSheet.h"
 #include "Utils.h"
 
-#if defined(_PLATFORM_NATIVE)
-	#include <glad/gles2.h>
+#if defined(_PLATFORM_DESKTOP)
+#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
-	#include <GLES3/gl3.h>
+#include <emscripten.h>
+#include <GLES3/gl3.h>
+#elif defined(_PLATFORM_ANDROID)
+#include <GLES3/gl3.h>
 #endif
 
 #include <time.h>

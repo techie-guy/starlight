@@ -1,10 +1,17 @@
-#if defined(_PLATFORM_NATIVE)
+#include "Window.h"
+
+#if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
+	#include <emscripten.h>
 	#include <GLES3/gl3.h>
+#elif defined(_PLATFORM_ANDROID)
+	#include <GLES3/gl3.h>
+	#include <android/native_window.h>
+	#define GLFW_EXPOSE_NATIVE_ANDROID
+	#include <GLFW/glfw3native.h>
 #endif
 
-#include "Window.h"
 #include "Utils.h"
 
 static Window* current_window = NULL;
@@ -22,6 +29,14 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	}
 }
 
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	current_window->width = width;
+	current_window->height = height;
+
+	glViewport(0, 0, width, height);
+}
+
 void initWindow(Window* window)
 {
 	current_window = window;
@@ -30,10 +45,13 @@ void initWindow(Window* window)
 
 	glfwInit();
 	
+#if defined(_PLATFORM_ANDROID)
+	glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#endif
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-
+	
 	window->handle = glfwCreateWindow(window->width, window->height, window->title, NULL, NULL);
 	if(!window->handle)
 	{
@@ -45,11 +63,20 @@ void initWindow(Window* window)
 	glfwMakeContextCurrent(window->handle);
 	glfwSwapInterval(1);
 
-	#if defined(_PLATFORM_NATIVE)
-		gladLoadGLES2(glfwGetProcAddress);
-	#endif
+#if defined(_PLATFORM_DESKTOP)
+	gladLoadGLES2(glfwGetProcAddress);
+#endif
+
+#if defined(_PLATFORM_ANDROID)
+	window->width = ANativeWindow_getWidth(glfwGetAndroidApp()->window);
+	window->height = ANativeWindow_getHeight(glfwGetAndroidApp()->window);
+	glfwSetWindowSize(window->handle, window->width, window->height);
+#endif
+	
+	glViewport(0, 0, window->width, window->height);
 
 	glfwSetKeyCallback(window->handle, key_callback);
+	glfwSetFramebufferSizeCallback(window->handle, framebuffer_size_callback);
 }
 
 void windowPollEvents()

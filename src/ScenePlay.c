@@ -11,14 +11,19 @@
 #include "SpriteSheet.h"
 #include "FontRenderer.h"
 
-#if defined(_PLATFORM_NATIVE)
+#if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
+	#include <emscripten.h>
+	#include <GLES3/gl3.h>
+#elif defined(_PLATFORM_ANDROID)
 	#include <GLES3/gl3.h>
 #endif
 
 #include <cglm/struct.h>
 #include "cimgui.h"
+
+static Window* current_window;
 
 static InputState input_state;
 
@@ -109,12 +114,14 @@ static void draw_player(mat4s view_times_proj)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
-static void init()
+static void init(Window* window)
 {
+	current_window = window;
+
 	init_player();
 	initMap();
 
-	camera.window_dimensions = (vec2s){{ WINDOW_WIDTH, WINDOW_HEIGHT }};
+	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
 	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
@@ -124,6 +131,7 @@ static void init()
 
 static void update(float deltatime)
 {
+	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
 	updateCamera(&camera);
 	view_times_proj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 
@@ -163,7 +171,7 @@ static void render()
 	drawMap(view_times_proj);
 	draw_player(view_times_proj);
 
-	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+//	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 }
 
 static void process_input(InputSystem input_system, float deltatime)

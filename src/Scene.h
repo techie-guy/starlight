@@ -6,7 +6,7 @@
 typedef struct
 {
 	char* scene_name;
-	void (*init)();
+	void (*init)(Window*);
 	void (*destroy)();
 	void (*activate)();
 	void (*deactivate)();
