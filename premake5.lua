@@ -12,7 +12,7 @@ workspace "mist-lib"
 	filter { "platforms:Web" }
 	    toolset "emcc"
 
-	outputdir = "%{cfg.buildcfg}-%{cfg.platform}"
+	outputdir = "%{cfg.platform}-%{cfg.buildcfg}"
 
 	window_width = 1280
 	window_height = 720
@@ -24,14 +24,14 @@ project "mist-lib"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
-	location "."	
+	location "build"
 
 	filter { "platforms:Desktop" }
 		assets_dir = "assets"
 
 		prebuildcommands
 		{
-			"{COPYDIR} assets %{cfg.buildtarget.directory}"
+			"{COPYDIR} ../%{assets_dir} %{cfg.buildtarget.directory}"
 		}
 
 		defines
@@ -176,6 +176,7 @@ filter { "platforms:Android" }
 		architecture "ARM64"
 		systemversion "30"
 
+		filter { "platforms:Android" }
 		files 
 		{
 			"$(ANDROID_NDK_HOME)/sources/android/native_app_glue/Android.mk",
@@ -191,6 +192,7 @@ filter { "platforms:Android" }
 		{
 			"-u ANativeActivity_onCreate"
 		}
+		filter{}
 
 	project "android_fopen"
 		kind "StaticLib"
