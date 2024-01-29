@@ -17,3 +17,10 @@
 	path = third-party/cimgui/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
+[submodule "third-party/glfw"]
+	path = third-party/glfw
+	url = git@github.com:techie-guy/GLFW.git
+	branch = android-support
+[submodule "third-party/premake-androidndk"]
+	path = third-party/premake-androidndk
+	url = https://github.com/Triang3l/premake-androidndk.git
