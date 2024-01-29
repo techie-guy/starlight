@@ -1,5 +1,4 @@
 require("third-party/premake5-emcc/emscripten")
-require("third-party/premake-androidndk/androidndk")
 
 workspace "mist-lib"
 	startproject "mist-lib"
@@ -24,24 +23,22 @@ project "mist-lib"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
-	location "."	
+	location "."
+
+	prebuildcommands
+	{
+		"{COPYDIR} assets %{cfg.buildtarget.directory}",	
+	}
 
 	filter { "platforms:Desktop" }
-		assets_dir = "assets"
-
-		prebuildcommands
-		{
-			"{COPYDIR} assets %{cfg.buildtarget.directory}"
-		}
-
 		defines
 		{
-			"_PLATFORM_DESKTOP",
+			"_PLATFORM_NATIVE"
 		}
 
 		links
 		{
-			"freetype",
+			"glfw",
 		}
 
 		includedirs
@@ -51,50 +48,17 @@ project "mist-lib"
 		}
 	filter{}
 
-	filter { "platforms:Android" }
-		assets_dir = ""
-
-		system "android"
-		architecture "ARM64"
-		systemversion "30"
-		kind "SharedLib"
-
-		prebuildcommands
-		{
-			"{COPYDIR} assets android-project/app/src/main",
-		}
-
-		links
-		{
-			"android_fopen"
-		}
-
-		defines
-		{
-			"_PLATFORM_ANDROID",
-		}
-
-		buildoptions
-		{
-			"-include src/android-fopen.h"
-		}
-
-	filter{}
-
 	filter { "platforms:Web" }
-		assets_dir = "assets"
-
 		targetextension ".html"
 
 		defines
 		{
-			"_PLATFORM_WEB",
+			"_PLATFORM_WEB"
 		}
 
 		links
 		{
-			"glfw3",
-			"freetype",
+			"glfw3"
 		}
 
 		buildoptions
@@ -120,20 +84,18 @@ project "mist-lib"
 		"WINDOW_WIDTH=%{window_width}",
 		"WINDOW_HEIGHT=%{window_height}",
 		"WINDOW_TITLE=\"%{window_title}\"",
-		"ASSETS_DIR=\"%{assets_dir}\"",
 	}
 
 	links
 	{
 		"m",
+		"freetype",
 		"stdc++",
 		"cimgui",
-		"glfw",
 	}
 
 	includedirs
 	{
-		"third-party/glfw/include",
 		"third-party/cglm/include",
 		"third-party/stb/include",
 		"third-party/glad/include",
@@ -154,11 +116,6 @@ project "mist-lib"
 		"third-party/stb/src/*.c", "third-party/stb/include/*.h",	
 	}
 
-	removefiles
-	{
-		"src/android-fopen.h", "src/android-fopen.c"
-	}
-
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
@@ -167,78 +124,41 @@ project "mist-lib"
 		defines { "NDEBUG" }
 		optimize "On"
 
-filter { "platforms:Android" }
-	project "android_native_app_glue"
-		kind "StaticLib"
-		location "build"
-		targetdir "bin/%{outputdir}/%{prj.name}"
-		objdir "bin/%{outputdir}/%{prj.name}/obj"
-		architecture "ARM64"
-		systemversion "30"
-
-		files 
-		{
-			"$(ANDROID_NDK_HOME)/sources/android/native_app_glue/Android.mk",
-		}
-
-		links
-		{
-			"log",
-			"android"
-		}
-
-		linkoptions
-		{
-			"-u ANativeActivity_onCreate"
-		}
-
-	project "android_fopen"
-		kind "StaticLib"
-		location "build"
-		targetdir "bin/%{outputdir}/%{prj.name}"
-		objdir "bin/%{outputdir}/%{prj.name}/obj"
-		architecture "ARM64"
-		systemversion "30"
-
-		filter { "platforms:Android" }
-		includedirs
-		{
-			"third-party/glfw/include",
-		}
-
-		defines
-		{
-			"_PLATFORM_ANDROID",
-			"__USE_BSD",
-		}
-
-		files 
-		{
-			"src/android-fopen.h",
-			"src/android-fopen.c",
-		}
-
-		links
-		{
-			"log",
-			"android",
-			"glfw"
-		}
-		filter{}
-filter{}
-	
-
 project "glfw"
 	kind "StaticLib"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
-	location "build"
+	location "third-party/glfw"
 
 	includedirs
 	{
 		"third-party/glfw/include"
-	}	
+	}
+
+	files
+	{
+		"third-party/glfw/include/GLFW/glfw3.h",
+		"third-party/glfw/include/GLFW/glfw3native.h",
+		"third-party/glfw/src/internal.h",
+		"third-party/glfw/src/platform.h",
+		"third-party/glfw/src/mappings.h",
+		"third-party/glfw/src/context.c",
+		"third-party/glfw/src/init.c",
+		"third-party/glfw/src/input.c",
+		"third-party/glfw/src/monitor.c",
+		"third-party/glfw/src/platform.c",
+		"third-party/glfw/src/vulkan.c",
+		"third-party/glfw/src/window.c",
+		"third-party/glfw/src/egl_context.c",
+		"third-party/glfw/src/osmesa_context.c",
+		"third-party/glfw/src/null_platform.h",
+		"third-party/glfw/src/null_joystick.h",
+		"third-party/glfw/src/null_init.c",
+		"third-party/glfw/src/null_monitor.c",
+		"third-party/glfw/src/null_window.c",
+		"third-party/glfw/src/null_joystick.c",
+	}
 
 	filter { "system:linux or system:android" }
 		files
@@ -253,7 +173,6 @@ project "glfw"
 		}
 	filter {}
 
-	filter { "platforms:Desktop" }
 	filter { "system:linux" }
 		local session_type = os.getenv("XDG_SESSION_TYPE")
 
@@ -294,19 +213,17 @@ project "glfw"
 			}
 		end
 	filter {}
-	filter {}
 
-	filter { "platforms:Android" }
-		architecture "ARM64"
-		systemversion "30"
-
+	filter { "system:android" }
 		links
 		{
-			"android_native_app_glue",
+			"android",
 			"EGL",
 			"GLESv1_CM",
 			"GLESv2",
 			"GLESv3",
+			"vulkan",
+			"log",
 		}
 		files
 		{
@@ -323,57 +240,15 @@ project "glfw"
 		}
 	filter {}
 
-	files
-	{
-		"third-party/glfw/include/GLFW/glfw3.h",
-		"third-party/glfw/include/GLFW/glfw3native.h",
-		"third-party/glfw/src/internal.h",
-		"third-party/glfw/src/platform.h",
-		"third-party/glfw/src/mappings.h",
-		"third-party/glfw/src/context.c",
-		"third-party/glfw/src/init.c",
-		"third-party/glfw/src/input.c",
-		"third-party/glfw/src/monitor.c",
-		"third-party/glfw/src/platform.c",
-		"third-party/glfw/src/vulkan.c",
-		"third-party/glfw/src/window.c",
-		"third-party/glfw/src/egl_context.c",
-		"third-party/glfw/src/osmesa_context.c",
-		"third-party/glfw/src/null_platform.h",
-		"third-party/glfw/src/null_joystick.h",
-		"third-party/glfw/src/null_init.c",
-		"third-party/glfw/src/null_monitor.c",
-		"third-party/glfw/src/null_window.c",
-		"third-party/glfw/src/null_joystick.c",
-	}
-
 project "cimgui"
 	kind "StaticLib"
 	language "C++"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
-	location "build"
-
-	filter { "platforms:Android" }
-		buildoptions
-		{
-			"-include ../../src/android-fopen.h"
-		}
-
-		defines
-		{
-			"_PLATFORM_ANDROID"
-		}
-
-		links
-		{
-			"android_fopen",
-		}
-	filter{}
+	location "third-party/cimgui"
 
 	includedirs
 	{
-		"third-party/glfw/include",
 		"third-party/cimgui/imgui",
 		"third-party/cimgui/imgui/backends",
 	}

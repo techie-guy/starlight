@@ -3,5 +3,10 @@ compile_commands.json
 .cache
 *.session
 *.make
+*.mk
 Makefile
 imgui.ini
+android-project-tmp
+android-project/app/build
+android-project/.gradle
+build
