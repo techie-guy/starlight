@@ -24,7 +24,7 @@ project "mist-lib"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
-	location "build"
+	location "."
 
 	filter { "platforms:Desktop" }
 		assets_dir = "assets"

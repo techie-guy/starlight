@@ -103,7 +103,7 @@ void initMap()
 	initVertexAttributes(&vertexAttributes, tiles, sizeof(tiles), indices, sizeof(indices));
 }
 
-void drawMap(const mat4s viewTimesProj)
+void drawMap(Camera* camera)
 {
 	bindShaderProgram(&shaderProgram);
 
@@ -113,10 +113,11 @@ void drawMap(const mat4s viewTimesProj)
 	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
 	transform = glms_translate(transform, (vec3s){{0.0f, 0.0f, 0.0f}});
 
-	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&viewTimesProj, &transform}, 2);
+	uniformMat4(&shaderProgram, "projection", camera->projection_matrix);
+	uniformMat4(&shaderProgram, "view", camera->view_matrix);
+	uniformMat4(&shaderProgram, "transform", transform);
 
 	uniformInt(&shaderProgram, "textureSampler", 0);
-	uniformMat4(&shaderProgram, "mvp", mvp);
 
 	bindBuffer(&vertexAttributes, VAO);
 
