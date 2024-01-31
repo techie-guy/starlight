@@ -58,10 +58,10 @@ typedef struct
 #define log_error(...) LOG("%s[Error]: %s", COLOR_BOLD_WHITE, COLOR_RED); LOG(__VA_ARGS__); LOG(COLOR_RESET)
 
 // Functions
-char* readFile(const char* filepath);
+char* read_file(const char* filepath, const char* mode);
 
 #ifdef UTILS_DEF
-char* readFile(const char* filepath)
+char* read_file(const char* filepath, const char* mode)
 {
 #if !defined(_PLATFORM_ANDROID)
 	if(access(filepath, F_OK) != 0)
@@ -71,10 +71,10 @@ char* readFile(const char* filepath)
 	}
 #endif
 
-	char* buffer = "";
+	char* buffer = NULL;
 	long length;
 
-	FILE* file = fopen(filepath, "r");
+	FILE* file = fopen(filepath, mode);
 
 	if(file)
 	{
@@ -87,9 +87,8 @@ char* readFile(const char* filepath)
 		if(buffer)
 		{
 			fread(buffer, 1, length, file);
+			buffer[length] = '\0';
 		}
-
-		buffer[length] = '\0';
 
 		fclose(file);
 	}

@@ -51,8 +51,8 @@ void compileShader(unsigned int* shader, const int shaderType, const char** shad
 
 void initShaderProgram(unsigned int* shaderProgram, const char* vertexShaderSourcePath, const char* fragmentShaderSourcePath)
 {
-	char* vertexShaderSource = readFile(vertexShaderSourcePath);
-	char* fragmentShaderSource = readFile(fragmentShaderSourcePath);
+	char* vertexShaderSource = read_file(vertexShaderSourcePath, "r");
+	char* fragmentShaderSource = read_file(fragmentShaderSourcePath, "r");
 
 	unsigned int vertexShader;
 	compileShader(&vertexShader, GL_VERTEX_SHADER, (const char**)&vertexShaderSource);
