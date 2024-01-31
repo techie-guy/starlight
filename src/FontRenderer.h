@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cglm/struct.h>
+#include "Window.h"
 
-void initFontRenderer(const char* fontPath, int characterSize);
+void initFontRenderer(const char* fontPath, int characterSize, Window* window);
 void renderText(char* text, float x, float y, float scale, vec3s color);

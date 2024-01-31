@@ -52,9 +52,9 @@ void init()
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-		
+
 	initSpriteSheet();
-//	initFontRenderer("assets/fonts/font.ttf", 48);
+	initFontRenderer("assets/fonts/font.ttf", 96, &window);
 
 	initScene(&window);
 

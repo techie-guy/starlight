@@ -173,7 +173,7 @@ static void render()
 	drawMap(&camera);
 	draw_player();
 
-//	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+	renderText("Hello", 100.0f, 300.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 }
 
 static void process_input(InputSystem input_system, float deltatime)
