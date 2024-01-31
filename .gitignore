@@ -11,3 +11,4 @@ android-project/app/build
 android-project/app/src/main/assets
 android-project/.gradle
 build
+tmp/
