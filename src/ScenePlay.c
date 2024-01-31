@@ -91,7 +91,7 @@ static void player_update_texcoords()
 	getSpriteAnimation(player_quad, player_spritesheet, currentSprite, animFrame);
 }
 
-static void draw_player(mat4s view_times_proj)
+static void draw_player()
 {
 	bindShaderProgram(&player->component_list.sprite_component.shader_program);
 
@@ -101,9 +101,11 @@ static void draw_player(mat4s view_times_proj)
 	transform = glms_scale(transform, player->component_list.transform_component.scale);
 	transform = glms_translate(transform, player->component_list.transform_component.position);
 
-	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&view_times_proj, &transform}, 2);
+//	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&view_times_proj, &transform}, 2);
 
-	uniformMat4(&player->component_list.sprite_component.shader_program, "mvp", mvp);
+	uniformMat4(&player->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+	uniformMat4(&player->component_list.sprite_component.shader_program, "view", camera.view_matrix);
+	uniformMat4(&player->component_list.sprite_component.shader_program, "transform", transform);
 
 	bindBuffer(&player->component_list.sprite_component.vertex_attribs, VAO);
 	bindBuffer(&player->component_list.sprite_component.vertex_attribs, VBO);
@@ -168,8 +170,8 @@ static void render()
 {
 //	ImGui_ShowDemoWindow(NULL);	
 
-	drawMap(view_times_proj);
-	draw_player(view_times_proj);
+	drawMap(&camera);
+	draw_player();
 
 //	renderText("Hello", 25.0f, 25.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 }
