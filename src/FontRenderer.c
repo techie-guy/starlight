@@ -1,4 +1,8 @@
 #include "FontRenderer.h"
+#include "ShaderProgram.h"
+#include "VertexAttributes.h"
+#include "Texture.h"
+#include "Utils.h"
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
@@ -9,16 +13,8 @@
 	#include <GLES3/gl3.h>
 #endif
 
-#if !defined(_PLATFORM_ANDROID)
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
+#include <stb_truetype.h>
 #include <stb_ds.h>
-
-#include "ShaderProgram.h"
-#include "VertexAttributes.h"
-#include "Texture.h"
 
 #define FONT_VERTEX_SHADER_PATH "assets/shaders/font-vertex-shader.glsl"
 #define FONT_FRAGMENT_SHADER_PATH "assets/shaders/font-fragment-shader.glsl"
@@ -27,17 +23,20 @@ typedef struct
 {
 	Texture texture;
 	vec2s size;
-	vec2s bearing;
+	vec2s offset;
 	unsigned int advance;
 } Character;
 
 static struct { char key; Character value; }* characters = NULL;
 
-static FT_Library ft;
-static FT_Face face;
+static stbtt_fontinfo font;
+static unsigned char* buffer;
+static int font_character_size;
 
-static unsigned int shaderProgram;
-static VertexAttributes vertexAttributes;
+static unsigned int shader_program;
+static VertexAttributes vertex_attributes;
+
+static Window* current_window;
 
 static GLushort indices[6] =
 {
@@ -46,37 +45,32 @@ static GLushort indices[6] =
 
 mat4s projection = GLMS_MAT4_IDENTITY_INIT;
 
-void initFontRenderer(const char* fontPath, int characterSize)
+void initFontRenderer(const char* font_path, int character_size, Window* window)
 {
-	initShaderProgram(&shaderProgram, FONT_VERTEX_SHADER_PATH, FONT_FRAGMENT_SHADER_PATH);
-	projection = glms_ortho(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT, -1.0f, 1.0f);
-	
-	bindShaderProgram(&shaderProgram);
-	uniformMat4(&shaderProgram, "projection", projection);
+	current_window = window;
 
-	initVertexAttributes(&vertexAttributes, NULL, sizeof(Quad), indices, sizeof(indices));
+	initShaderProgram(&shader_program, FONT_VERTEX_SHADER_PATH, FONT_FRAGMENT_SHADER_PATH);	
+	initVertexAttributes(&vertex_attributes, NULL, sizeof(Quad), indices, sizeof(indices));
 
 	//  Loading the .ttf file
-	FT_Init_FreeType(&ft);
-	FT_New_Face(ft, fontPath, 0, &face);
-	FT_Set_Pixel_Sizes(face, 0, characterSize);  
+	buffer = (unsigned char*)read_file(font_path, "rb");
+	stbtt_InitFont(&font, buffer, 0);
+	font_character_size = character_size;
+	float scale = stbtt_ScaleForPixelHeight(&font, character_size);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-
+	
 	for (unsigned char c = 0; c < 128; c++)
 	{
-		// load character glyph 
-		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-		{
-			printf("Failed to load Glyph!\n");
-			continue;
-		}
+		int glyph_index = stbtt_FindGlyphIndex(&font, c);
+		int width, height, x_offset, y_offset;
+		unsigned char* bitmap = stbtt_GetGlyphBitmap(&font, 0, scale, glyph_index, &width, &height, &x_offset, &y_offset);
 
 		// generate texture
 		Texture texture;
-		texture.width = face->glyph->bitmap.width;
-		texture.height = face->glyph->bitmap.rows;
-		initTextureFromData(&texture, 0, GL_R8, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+		texture.width = width;
+		texture.height = height;
+		initTextureFromData(&texture, 0, GL_R8, GL_RED, GL_UNSIGNED_BYTE, bitmap);
 
 		// set texture options
 		setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -88,30 +82,32 @@ void initFontRenderer(const char* fontPath, int characterSize)
 	    Character character = 
 		{
     	    texture, 
-			(vec2s){face->glyph->bitmap.width, face->glyph->bitmap.rows},
-			(vec2s){face->glyph->bitmap_left, face->glyph->bitmap_top},
-    	    face->glyph->advance.x
+			(vec2s){width, height},
+			(vec2s){x_offset, y_offset},
+    	    stbtt_GetGlyphKernAdvance(&font, glyph_index, stbtt_FindGlyphIndex(&font, c+1))
     	};
-		hmput(characters, c, character);	
+		hmput(characters, c, character);
 	}
 	unbindTexture();
-
-	FT_Done_Face(face);
-	FT_Done_FreeType(ft);
 }
 
+// BUG: Blurry text if scale is not 1.0
+// BUG: Text not aligned properly
 void renderText(char* text, float x, float y, float scale, vec3s color)
 {
-	bindShaderProgram(&shaderProgram);
-	uniformVec3(&shaderProgram, "textColor", color);
-	bindBuffer(&vertexAttributes, VAO);
+	bindShaderProgram(&shader_program);
+	projection = glms_ortho(0, current_window->width, 0, current_window->height, -1.0f, 1.0f);
+	uniformMat4(&shader_program, "projection", projection);
+	uniformVec3(&shader_program, "textColor", color);
+
+	bindBuffer(&vertex_attributes, VAO);
 
 	for(char* c = text; *c != '\0'; c++)
 	{
 		Character ch = hmget(characters, *c);
 
-		float xpos = x + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+		float xpos = x + ch.offset.x;
+        float ypos = y + ch.offset.y;
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
@@ -142,15 +138,13 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
         // render glyph texture over quad
 		bindTexture(&ch.texture);
         // update content of VBO memory
-		bindBuffer(&vertexAttributes, VBO);
+		bindBuffer(&vertex_attributes, VBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad);
         // render quad
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+        x += w;
 	}
 
-	unbindBuffer(&vertexAttributes, VAO);
+	unbindBuffer(&vertex_attributes, VAO);
 	unbindTexture();
 }
-#endif

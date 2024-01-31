@@ -31,17 +31,12 @@ project "mist-lib"
 
 		prebuildcommands
 		{
-			"{COPYDIR} ../%{assets_dir} %{cfg.buildtarget.directory}"
+			"{COPYDIR} %{assets_dir} %{cfg.buildtarget.directory}"
 		}
 
 		defines
 		{
 			"_PLATFORM_DESKTOP",
-		}
-
-		links
-		{
-			"freetype",
 		}
 
 		includedirs
@@ -94,12 +89,6 @@ project "mist-lib"
 		links
 		{
 			"glfw3",
-			"freetype",
-		}
-
-		buildoptions
-		{
-			"-sUSE_FREETYPE=1",
 		}
 
 		linkoptions
