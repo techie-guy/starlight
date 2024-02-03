@@ -43,20 +43,18 @@ void init()
 	window.width = WINDOW_WIDTH;
 	window.height = WINDOW_HEIGHT;
 
+#if defined(_PLATFORM_DESKTOP)
+	chdir("./assets");
+#endif
+
 	initWindow(&window);
 	changeWindowColor("#034694", 1.0f);
-
-	addScene(&ScenePlay);
-
-	changeScene("ScenePlay");
-
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
 	initSpriteSheet();
-	initFontRenderer("assets/fonts/font.ttf", 96, &window);
-
-	initScene(&window);
+	initFontRenderer("fonts/font.ttf", 96, &window);
 
 	// Init ImGui
 	ImGui_CreateContext(NULL);
@@ -74,13 +72,18 @@ void init()
 	ImFontGlyphRangesBuilder_AddText(&builder, "", NULL);
 	ImFontGlyphRangesBuilder_BuildRanges(&builder, &ranges);
 	
-	ImFontAtlas_AddFontFromFileTTF(io->Fonts, "assets/fonts/font.ttf", 20, NULL, ranges.Data);
+	ImFontAtlas_AddFontFromFileTTF(io->Fonts, "fonts/font.ttf", 20, NULL, ranges.Data);
 	ImFontAtlas_Build(io->Fonts);
 
 	ImVector_Destruct(&ranges);
 
 	cImGui_ImplGlfw_InitForOpenGL(window.handle, true);
 	cImGui_ImplOpenGL3_InitEx("#version 100");
+
+	// Scene
+	addScene(&ScenePlay);
+	changeScene("ScenePlay");
+	initScene(&window);
 }
 
 void renderFrame()

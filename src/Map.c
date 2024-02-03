@@ -99,7 +99,7 @@ void initMap()
 	initTextureFromFile(&texture, spriteSheet->path);
 	
 	fillMap();
-	initShaderProgram(&shaderProgram, "assets/shaders/map-vertex-shader.glsl", "assets/shaders/map-fragment-shader.glsl");
+	initShaderProgram(&shaderProgram, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
 	initVertexAttributes(&vertexAttributes, tiles, sizeof(tiles), indices, sizeof(indices));
 }
 

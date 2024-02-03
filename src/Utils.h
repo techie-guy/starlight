@@ -94,22 +94,5 @@ char* read_file(const char* filepath, const char* mode)
 	}
 
 	return buffer;
-/*
-#else
-	AAssetManager* asset_manager = glfwGetAndroidApp()->activity->assetManager;
-	AAsset* file = AAssetManager_open(asset_manager, filepath, AASSET_MODE_BUFFER);
-	
-	size_t file_length = AAsset_getLength(file);
-
-	char* buffer = NULL;
-	arrsetlen(buffer, file_length);
-
-	AAsset_read(file, buffer, file_length);
-	
-	AAsset_close(file);
-
-	return buffer;
-#endif
-*/
 }
 #endif

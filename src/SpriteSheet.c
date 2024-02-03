@@ -36,7 +36,7 @@ void initSpriteSheet()
 {
 	spriteSheetHashMap = hashmap_new(sizeof(SpriteSheet), 0, 0, 0, spriteSheetHash, spriteSheetCompare, NULL, NULL);
 
-	char* textureJsonString = read_file("assets/spritesheets.json", "r");
+	char* textureJsonString = read_file("spritesheets.json", "r");
 	cJSON* textureJson = cJSON_Parse(textureJsonString);
 
 	cJSON* spriteSheetsJson = cJSON_GetObjectItemCaseSensitive(textureJson, "spriteSheets");
