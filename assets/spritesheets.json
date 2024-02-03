@@ -2,7 +2,7 @@
 "spriteSheets": [
 	{
 		"name": "player",
-		"path": "assets/textures/player.png",
+		"path": "textures/player.png",
 		"defaultSprite": "idle",
 		"type": 0,
 		"width": 192,
@@ -48,7 +48,7 @@
 	},
 	{
 		"name": "villan",
-		"path": "assets/textures/villan.png",
+		"path": "textures/villan.png",
 		"defaultSprite": "idle",
 		"type": 0,
 		"width": 416,
@@ -103,7 +103,7 @@
 	},
 	{
 		"name": "tiles",
-		"path": "assets/textures/tiles.png",
+		"path": "textures/tiles.png",
 		"defaultSprite": "grass",
 		"type": 0,
 		"width": 96,
@@ -140,7 +140,7 @@
 	},
 	{
 		"name": "skeleton",
-		"path": "assets/textures/skeleton.png",
+		"path": "textures/skeleton.png",
 		"defaultSprite": "move-down",
 		"type": 1,
 		"width": 64,

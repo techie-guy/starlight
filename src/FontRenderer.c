@@ -16,8 +16,8 @@
 #include <stb_truetype.h>
 #include <stb_ds.h>
 
-#define FONT_VERTEX_SHADER_PATH "assets/shaders/font-vertex-shader.glsl"
-#define FONT_FRAGMENT_SHADER_PATH "assets/shaders/font-fragment-shader.glsl"
+#define FONT_VERTEX_SHADER_PATH "shaders/font-vertex-shader.glsl"
+#define FONT_FRAGMENT_SHADER_PATH "shaders/font-fragment-shader.glsl"
 
 typedef struct
 {
