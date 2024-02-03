@@ -24,7 +24,7 @@ Use `make help` to get a list of the available configurations.
 
 Use `make config=CONFIG` to build the project for the required Platform.
 
-To Run the executable, use `bin/CONFIG/mist-lib/mist-lib`,
+The executable is in `bin/CONFIG/mist-lib/mist-lib`,
 
 ## Android Support
 ### Using Gradle
