@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdk 30 //
-    ndkVersion '25.1.8937393'
+    ndkVersion '25.1.8937393'	
 
     defaultConfig {	
         applicationId = 'io.github.techieguy.mistlib'
@@ -41,6 +41,12 @@ android {
             }
         }
     }
+	preBuild {
+		copy {
+			from '../../assets'
+			into './src/main/assets'
+		}
+	}
 	externalNativeBuild {
         ndkBuild {
             path file('../../mist-lib.wks.Android.mk')
