@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Map.h"
 #include "ECS.h"
+#include "Utils.h"
 #include "VertexAttributes.h"
 #include "ShaderProgram.h"
 #include "Texture.h"
@@ -20,6 +21,8 @@
 	#include <GLES3/gl3.h>
 #endif
 
+#include <math.h>
+
 #include <cglm/struct.h>
 #include "cimgui.h"
 
@@ -32,6 +35,10 @@ static mat4s view_times_proj = GLMS_MAT4_IDENTITY_INIT;
 
 static SpriteSheet* player_spritesheet;
 static char* player_current_sprite_name = "";
+
+static float joystick_angle = 0.0f;
+
+static ImGuiIO* imgui_io;
 
 static Quad player_quad[1] =
 {
@@ -71,7 +78,7 @@ static void init_player()
 
 	initTextureFromFile(&player->component_list.sprite_component.texture, player_spritesheet->path);
 	initVertexAttributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices));
-	initShaderProgram(&player->component_list.sprite_component.shader_program, "assets/shaders/player-vertex-shader.glsl", "assets/shaders/player-fragment-shader.glsl");
+	initShaderProgram(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
 
 static void player_update_texcoords()
@@ -129,6 +136,8 @@ static void init(Window* window)
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
 	camera.speed = 5.0f;
 	initCamera(&camera);
+	
+	imgui_io = ImGui_GetIO();
 }
 
 static void update(float deltatime)
@@ -163,7 +172,7 @@ static void update(float deltatime)
 		player_current_sprite_name = "move-right";
 	}
 
-	moveCamera(&camera, input_state, deltatime);
+//	moveCamera(&camera, input_state, deltatime);
 }
 
 static void render()
@@ -185,6 +194,11 @@ static void process_input(InputSystem input_system, float deltatime)
 	input_state.space = input_system.key_pressed_data[GLFW_KEY_SPACE];
 	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
 
+//	if(joystick_angle >= 45.0f && joystick_angle <= ) input_state.right = true;
+//	if(joystick_angle >= -30.0f && joystick_angle >= 30.0f) input_state.right = true;
+//	if(joystick_angle >= -30.0f && joystick_angle >= 30.0f) input_state.right = true;
+
+	/*
 	// Joystick
 	ImVec2 joystick_button_size = {40.0f, 40.0f};
 
@@ -218,6 +232,50 @@ static void process_input(InputSystem input_system, float deltatime)
 		ImGui_EndGroup();
 	}
 	ImGui_End();
+	*/
+
+	ImVec2 joystick_size = {400.0f, 400.0f};
+	float joystick_radius = 70.0f;
+	ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
+	ImVec2 joystick_center = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};
+
+	ImGui_Begin("Input", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		static ImVec2 joystick_circle_pos;
+		ImGui_SetWindowSize(joystick_size, ImGuiCond_Always);
+		ImGui_SetWindowPos((ImVec2){50, ImGui_GetIO()->DisplaySize.y - joystick_size.y*1.2}, ImGuiCond_Always);
+		ImDrawList_AddCircleFilled(ImGui_GetWindowDrawList(), joystick_circle_pos, joystick_radius, ImGui_ColorConvertFloat4ToU32(joystick_color), 32);
+		ImGui_InvisibleButton("Joystick", (ImVec2){joystick_radius*4, joystick_radius*4}, ImGuiButtonFlags_MouseButtonLeft);
+		ImGui_SetCursorPos(joystick_circle_pos);
+		if(ImGui_IsItemActive() && ImGui_IsMouseDragging(0, -1.0f))
+		{
+			joystick_circle_pos = imgui_io->MousePos;
+			vec2s mouse_drag_delta = (vec2s){ImGui_GetMouseDragDelta(0, -1.0f).x, ImGui_GetMouseDragDelta(0, -1.0f).y};
+
+			// Bad workaround
+			float dot_product_by_norm_x = glms_vec2_dot((vec2s){1.0f, 0.0f}, mouse_drag_delta)/glms_vec2_norm(mouse_drag_delta);
+			float dot_product_by_norm_y = glms_vec2_dot((vec2s){0.0f, -1.0f}, mouse_drag_delta)/glms_vec2_norm(mouse_drag_delta);
+			
+			if(dot_product_by_norm_y > 0.0f) // 1st or 2nd Quadrant
+			{
+				joystick_angle = glm_deg(acosf(dot_product_by_norm_x));
+			}
+			else // 3rd or 4th Quadrant
+			{
+				joystick_angle = glm_deg(2*M_PI - acosf(dot_product_by_norm_x));
+			}
+
+			if(joystick_angle >= 315.0f || joystick_angle <= 45.0f) input_state.right = true;
+			else if(joystick_angle >= 45.0f && joystick_angle <= 135.0f) input_state.up = true;
+			else if(joystick_angle >= 135.0f && joystick_angle <= 225.0f) input_state.left = true;
+			else if(joystick_angle >= 225.0f && joystick_angle <= 315.0f) input_state.down = true;
+		}
+		else
+		{
+			joystick_circle_pos = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};;
+		}
+	}
+	ImGui_End();	
 }
 
 static void activate()
