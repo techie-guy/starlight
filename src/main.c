@@ -3,7 +3,7 @@
 
 int main()
 {
-	runApplication();
+	run_application();
 
 	return EXIT_SUCCESS;
 }

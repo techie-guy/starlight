@@ -6,13 +6,13 @@ vec3s camera_front;
 vec3s camera_right;
 vec3s camera_up;
 
-void initCamera(Camera* camera)
+void init_camera(Camera* camera)
 {
 	camera->projection_matrix = (mat4s)GLMS_MAT4_IDENTITY_INIT;
 	camera->view_matrix = (mat4s)GLMS_MAT4_IDENTITY_INIT;
 }
 
-void updateCamera(Camera* camera)
+void update_camera(Camera* camera)
 {
 	camera_front = (vec3s){{0.0f, 0.0f, 1.0f}};
 	camera_right = glms_vec3_normalize(glms_vec3_cross(camera_front, camera->up));
@@ -26,30 +26,30 @@ void updateCamera(Camera* camera)
 	camera->view_matrix = glms_lookat(camera->position, glms_vec3_add(camera->position, camera_front), camera_up);
 }
 
-void moveCamera(Camera* camera, InputState inputState, float deltaTime)
+void move_camera(Camera* camera, InputState input_state, float deltatime)
 {	
-	if(inputState.up)
+	if(input_state.up)
 	{
-		camera->position.z += camera->speed * deltaTime;
+		camera->position.z += camera->speed * deltatime;
 	}
-	if(inputState.down)
+	if(input_state.down)
 	{
-		camera->position.z -= camera->speed * deltaTime;
+		camera->position.z -= camera->speed * deltatime;
 	}
-	if(inputState.left)
+	if(input_state.left)
 	{
-		camera->position.x += camera->speed * deltaTime;
+		camera->position.x += camera->speed * deltatime;
 	}
-	if(inputState.right)
+	if(input_state.right)
 	{
-		camera->position.x -= camera->speed * deltaTime;
+		camera->position.x -= camera->speed * deltatime;
 	}
-	if(inputState.space)
+	if(input_state.space)
 	{
-		camera->position.y += camera->speed * deltaTime;
+		camera->position.y += camera->speed * deltatime;
 	}
-	if(inputState.l_ctrl)
+	if(input_state.l_ctrl)
 	{
-		camera->position.y -= camera->speed * deltaTime;
+		camera->position.y -= camera->speed * deltatime;
 	}
 }

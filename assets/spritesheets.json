@@ -1,9 +1,9 @@
 {
-"spriteSheets": [
+"spritesheets": [
 	{
 		"name": "player",
 		"path": "textures/player.png",
-		"defaultSprite": "idle",
+		"default_sprite": "idle",
 		"type": 0,
 		"width": 192,
 		"height": 64,
@@ -12,44 +12,44 @@
 				"name": "idle",
 				"x": 0,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 6,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 6,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "strafe",
 				"x": 0,
 				"y": 2,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-up",
 				"x": 2,
 				"y": 2,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-down",
 				"x": 4,
 				"y": 2,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			}
 		]	
 	},
 	{
 		"name": "villan",
 		"path": "textures/villan.png",
-		"defaultSprite": "idle",
+		"default_sprite": "idle",
 		"type": 0,
 		"width": 416,
 		"height": 32,
@@ -58,53 +58,53 @@
 				"name": "idle",
 				"x": 0,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 3,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 3,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-right",
 				"x": 4,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-left",
 				"x": 6,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-up",
 				"x": 8,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 3,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 3,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "move-down",
 				"x": 11,
 				"y": 1,
-				"frameSpeed": 10,
-				"spriteCount": 2,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 10,
+				"sprite_count": 2,
+				"sprite_width": 32,
+				"sprite_height": 32
 			}
 		]	
 	},
 	{
 		"name": "tiles",
 		"path": "textures/tiles.png",
-		"defaultSprite": "grass",
+		"default_sprite": "grass",
 		"type": 0,
 		"width": 96,
 		"height": 32,
@@ -113,35 +113,35 @@
 				"name": "grass",
 				"x": 0,
 				"y": 0,
-				"frameSpeed": 20,
-				"spriteCount": 1,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 20,
+				"sprite_count": 1,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "stone",
 				"x": 1,
 				"y": 0,
-				"frameSpeed": 20,
-				"spriteCount": 1,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 20,
+				"sprite_count": 1,
+				"sprite_width": 32,
+				"sprite_height": 32
 			},
 			{
 				"name": "water",
 				"x": 2,
 				"y": 0,
-				"frameSpeed": 20,
-				"spriteCount": 1,
-				"spriteWidth": 32,
-				"spriteHeight": 32
+				"frame_speed": 20,
+				"sprite_count": 1,
+				"sprite_width": 32,
+				"sprite_height": 32
 			}
 		]
 	},
 	{
 		"name": "skeleton",
 		"path": "textures/skeleton.png",
-		"defaultSprite": "move-down",
+		"default_sprite": "move-down",
 		"type": 1,
 		"width": 64,
 		"height": 112,
@@ -150,37 +150,37 @@
 				"name": "move-down",
 				"x": 0,
 				"y": 0,
-				"frameSpeed": 15,
-				"spriteCount": 6,
-				"spriteWidth": 15,
-				"spriteHeight": 15
+				"frame_speed": 15,
+				"sprite_count": 6,
+				"sprite_width": 15,
+				"sprite_height": 15
 			},
 			{
 				"name": "move-up",
 				"x": 1,
 				"y": 0,
-				"frameSpeed": 10,
-				"spriteCount": 6,
-				"spriteWidth": 16,
-				"spriteHeight": 15
+				"frame_speed": 10,
+				"sprite_count": 6,
+				"sprite_width": 16,
+				"sprite_height": 15
 			},
 			{
 				"name": "move-left",
 				"x": 2,
 				"y": 0,
-				"frameSpeed": 10,
-				"spriteCount": 6,
-				"spriteWidth": 15,
-				"spriteHeight": 15
+				"frame_speed": 10,
+				"sprite_count": 6,
+				"sprite_width": 15,
+				"sprite_height": 15
 			},
 			{
 				"name": "move-right",
 				"x": 3,
 				"y": 0,
-				"frameSpeed": 10,
-				"spriteCount": 6,
-				"spriteWidth": 15,
-				"spriteHeight": 15
+				"frame_speed": 10,
+				"sprite_count": 6,
+				"sprite_width": 15,
+				"sprite_height": 15
 			}
 		]
 	}

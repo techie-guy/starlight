@@ -8,7 +8,7 @@ static int total_entities = 0;
 
 static Entity** entities = NULL;
 
-Entity* addEntity(char* tag)
+Entity* add_entity(char* tag)
 {
 	Entity* e = malloc(sizeof(Entity));
 	e->id = total_entities++;
@@ -20,7 +20,7 @@ Entity* addEntity(char* tag)
 	return e;
 }
 
-void destroyECS()
+void destroy_ECS()
 {
 	for(int i = 0; i < arrlen(entities); i++)
 	{

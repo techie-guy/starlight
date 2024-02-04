@@ -16,6 +16,6 @@ typedef struct
 	float speed;
 } Camera;
 
-void initCamera(Camera* camera);
-void updateCamera(Camera* camera);
-void moveCamera(Camera* camera, InputState inputState, float deltaTime);
+void init_camera(Camera* camera);
+void update_camera(Camera* camera);
+void move_camera(Camera* camera, InputState input_state, float deltatime);

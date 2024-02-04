@@ -3,7 +3,6 @@
 #include "Components.h"
 #include "Scene.h"
 #include "Camera.h"
-#include "Map.h"
 #include "ECS.h"
 #include "Utils.h"
 #include "VertexAttributes.h"
@@ -22,6 +21,10 @@
 #endif
 
 #include <math.h>
+#include <time.h>
+
+#include <hashmap.h>
+#include <stb_perlin.h>
 
 #include <cglm/struct.h>
 #include "cimgui.h"
@@ -33,12 +36,17 @@ static InputState input_state;
 static Camera camera;
 static mat4s view_times_proj = GLMS_MAT4_IDENTITY_INIT;
 
-static SpriteSheet* player_spritesheet;
-static char* player_current_sprite_name = "";
-
 static float joystick_angle = 0.0f;
+static ImVec2 joystick_size = {400.0f, 400.0f};
+static float joystick_radius = 70.0f;
+static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
 
 static ImGuiIO* imgui_io;
+
+// Player
+static SpriteSheet* player_spritesheet;
+static char* player_current_sprite_name = "";
+static Entity* player;
 
 static Quad player_quad[1] =
 {
@@ -59,11 +67,21 @@ static GLushort player_indices[6] =
 	2, 3, 0
 };
 
-static Entity* player;
+// Map
+#define MAP_SIZE_X 50
+#define MAP_SIZE_Y 50
+#define MAP_TILE_COUNT MAP_SIZE_X * MAP_SIZE_Y
 
+static Entity* map;
+static SpriteSheet* map_sprite_sheet;
+static Quad map_tiles[MAP_TILE_COUNT];
+static GLushort map_indices[MAP_TILE_COUNT * 6];
+static vec3s map_tile_size = (vec3s){{0.02f, 0.03f}};
+
+// Player
 static void init_player()
 {
-	player = addEntity("player");
+	player = add_entity("player");
 
 	player->component_list.transform_component = (Component_Transform)
 	{
@@ -72,50 +90,48 @@ static void init_player()
 		.speed = 4.0f,
 	};
 
-	player_spritesheet = (SpriteSheet*)hashmap_get(spriteSheetHashMap, &(SpriteSheet){ .name="villan" });
+	player_spritesheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="villan" });
 
-	player_current_sprite_name = player_spritesheet->defaultSprite;	
+	player_current_sprite_name = player_spritesheet->default_sprite;
 
-	initTextureFromFile(&player->component_list.sprite_component.texture, player_spritesheet->path);
-	initVertexAttributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices));
-	initShaderProgram(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
+	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
+	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices));
+	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
 
 static void player_update_texcoords()
 {
-	Sprite* currentSprite = (Sprite*)hashmap_get(player_spritesheet->spriteHashMap, &(Sprite){ .name=player_current_sprite_name });
+	Sprite* current_sprite = (Sprite*)hashmap_get(player_spritesheet->sprite_hashmap, &(Sprite){ .name=player_current_sprite_name });
 
-	static int currentFrame = 0;
+	static int current_frame = 0;
 
-	currentFrame++;
+	current_frame++;
 
-	int animFrame;
+	int anim_frame;
 	if(player_spritesheet->type == SHEET_HORIZONTAL)
-		animFrame = currentSprite->x + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
+		anim_frame = current_sprite->x + ((current_frame/current_sprite->frame_speed) % current_sprite->sprite_count);
 	if(player_spritesheet->type == SHEET_VERTICAL)
-		animFrame = currentSprite->y + ((currentFrame/currentSprite->frameSpeed) % currentSprite->spriteCount);
+		anim_frame = current_sprite->y + ((current_frame/current_sprite->frame_speed) % current_sprite->sprite_count);
 
-	getSpriteAnimation(player_quad, player_spritesheet, currentSprite, animFrame);
+	get_sprite_animation(player_quad, player_spritesheet, current_sprite, anim_frame);
 }
 
 static void draw_player()
 {
-	bindShaderProgram(&player->component_list.sprite_component.shader_program);
+	bind_shader_program(&player->component_list.sprite_component.shader_program);
 
-	bindTexture(&player->component_list.sprite_component.texture);
+	bind_texture(&player->component_list.sprite_component.texture);
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
 	transform = glms_scale(transform, player->component_list.transform_component.scale);
 	transform = glms_translate(transform, player->component_list.transform_component.position);
 
-//	mat4s mvp = glms_mat4_mulN((mat4s*[]){(mat4s*)&view_times_proj, &transform}, 2);
+	uniform_mat4(&player->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+	uniform_mat4(&player->component_list.sprite_component.shader_program, "view", camera.view_matrix);
+	uniform_mat4(&player->component_list.sprite_component.shader_program, "transform", transform);
 
-	uniformMat4(&player->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
-	uniformMat4(&player->component_list.sprite_component.shader_program, "view", camera.view_matrix);
-	uniformMat4(&player->component_list.sprite_component.shader_program, "transform", transform);
-
-	bindBuffer(&player->component_list.sprite_component.vertex_attribs, VAO);
-	bindBuffer(&player->component_list.sprite_component.vertex_attribs, VBO);
+	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VAO);
+	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VBO);
 
 	player_update_texcoords();
 
@@ -123,19 +139,119 @@ static void draw_player()
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
+// Map
+void fill_map()
+{
+	srand(time(NULL));
+	const int seed = rand();
+
+	Texture texture = map->component_list.sprite_component.texture;
+
+	// Vertices
+	for(int y = 0; y < MAP_SIZE_Y; y++)
+	{
+		for(int x = 0; x < MAP_SIZE_X; x++)
+		{
+			float noise_x = (float)x/(float)MAP_SIZE_X;
+			float noise_y = (float)y/(float)MAP_SIZE_Y;
+			float noise_factor = 10.0f;
+			static char* tile_sprite = "grass";
+
+			float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, 0.0f, 0, 0, 0, seed);
+
+			if(perlin_noise < -0.2) tile_sprite = "water";
+			if(perlin_noise > -0.1) tile_sprite = "grass";
+			if(perlin_noise > 0.3) tile_sprite = "stone";
+
+			float x1 = (float)(x*texture.width*map_tile_size.x);
+			float y1 = (float)(y*texture.height*map_tile_size.y);
+			float x2 = (float)((x+1)*texture.width*map_tile_size.x);
+			float y2 = (float)((y+1)*texture.height*map_tile_size.y);
+
+			map_tiles[y * MAP_SIZE_X + x] = (Quad)
+			{
+				{
+					{{{x2, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{1.0f, 1.0f}}},
+					{{{x2, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{1.0f, 0.0f}}},
+					{{{x1, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{0.0f, 0.0f}}},
+					{{{x1, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{0.0f, 1.0f}}},
+				}
+			};
+
+			Sprite* sprite = (Sprite*)hashmap_get(map_sprite_sheet->sprite_hashmap, &(Sprite){ .name=tile_sprite });
+			get_spriteUV(&map_tiles[y * MAP_SIZE_X + x], map_sprite_sheet, sprite);
+		}
+	}
+
+	// Indices
+	for(int i = 0; i < sizeof(map_indices)/sizeof(map_indices[0]); i += 6)
+	{
+		static int offset = 0;
+
+		map_indices[i + 0] = 0 + offset;
+		map_indices[i + 1] = 1 + offset;
+		map_indices[i + 2] = 2 + offset;
+
+		map_indices[i + 3] = 2 + offset;
+		map_indices[i + 4] = 3 + offset;
+		map_indices[i + 5] = 0 + offset;
+
+		offset += 4;
+	}
+}
+
+void init_map()
+{
+	map = add_entity("map");
+	map->component_list.transform_component = (Component_Transform)
+	{
+		.position = {0.0f, 0.0f, 0.0f},
+		.scale = {1.0f, 1.0f, 0.0f},
+		.speed = 0.0f,
+	};
+
+	map_sprite_sheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="tiles" });
+
+	init_texture_from_file(&map->component_list.sprite_component.texture, map_sprite_sheet->path);
+
+	fill_map();
+	init_shader_program(&map->component_list.sprite_component.shader_program, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
+	init_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, map_tiles, sizeof(map_tiles), map_indices, sizeof(map_indices));
+}
+
+void draw_map(Camera* camera)
+{
+	bind_shader_program(&map->component_list.sprite_component.shader_program);
+
+	bind_texture(&map->component_list.sprite_component.texture);
+
+	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
+	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
+	transform = glms_translate(transform, (vec3s){{0.0f, 0.0f, 0.0f}});
+
+	uniform_mat4(&map->component_list.sprite_component.shader_program, "projection", camera->projection_matrix);
+	uniform_mat4(&map->component_list.sprite_component.shader_program, "view", camera->view_matrix);
+	uniform_mat4(&map->component_list.sprite_component.shader_program, "transform", transform);
+
+	bind_vertex_buffer(&map->component_list.sprite_component.vertex_attribs, VAO);
+
+	glDrawElements(GL_TRIANGLES, MAP_TILE_COUNT*6, GL_UNSIGNED_SHORT, 0);
+}
+
+// Scene
 static void init(Window* window)
 {
 	current_window = window;
 
 	init_player();
-	initMap();
+	init_map();
 
 	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
 	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
 	camera.speed = 5.0f;
-	initCamera(&camera);
+	init_camera(&camera);
 	
 	imgui_io = ImGui_GetIO();
 }
@@ -143,12 +259,12 @@ static void init(Window* window)
 static void update(float deltatime)
 {
 	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
-	updateCamera(&camera);
+	update_camera(&camera);
 	view_times_proj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 
 	if(!input_state.keyPress)
 	{
-		player_current_sprite_name = player_spritesheet->defaultSprite;
+		player_current_sprite_name = player_spritesheet->default_sprite;
 	}
 
 	if(input_state.up)
@@ -179,10 +295,10 @@ static void render()
 {
 //	ImGui_ShowDemoWindow(NULL);	
 
-	drawMap(&camera);
+	draw_map(&camera);
 	draw_player();
 
-	renderText("Hello", 100.0f, 300.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+	render_text("Hello", 100.0f, 300.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
 }
 
 static void process_input(InputSystem input_system, float deltatime)
@@ -194,49 +310,7 @@ static void process_input(InputSystem input_system, float deltatime)
 	input_state.space = input_system.key_pressed_data[GLFW_KEY_SPACE];
 	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
 
-//	if(joystick_angle >= 45.0f && joystick_angle <= ) input_state.right = true;
-//	if(joystick_angle >= -30.0f && joystick_angle >= 30.0f) input_state.right = true;
-//	if(joystick_angle >= -30.0f && joystick_angle >= 30.0f) input_state.right = true;
-
-	/*
-	// Joystick
-	ImVec2 joystick_button_size = {40.0f, 40.0f};
-
-    ImGui_SetNextWindowPos((ImVec2){50, ImGui_GetIO()->DisplaySize.y - 200}, ImGuiCond_Always);
-
-	ImGui_Begin("Input", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-	{
-		ImGui_BeginGroup();
-		ImGui_Text("    ");
-		ImGui_SameLine();
-
-		if(ImGui_ButtonEx("", joystick_button_size)) input_state.up = true;
-		else if(ImGui_IsItemActive()) input_state.up = true;
-
-		if(ImGui_ButtonEx("", joystick_button_size)) input_state.left = true;
-		else if(ImGui_IsItemActive()) input_state.left = true;
-
-		ImGui_SameLine();
-		if(ImGui_ButtonEx("", joystick_button_size)) input_state.l_ctrl = true;
-		else if(ImGui_IsItemActive()) input_state.l_ctrl = true;
-
-		ImGui_SameLine();
-		if(ImGui_ButtonEx("", joystick_button_size)) input_state.right = true;
-		else if(ImGui_IsItemActive()) input_state.right = true;
-
-		ImGui_Text("    ");
-		ImGui_SameLine();
-		if(ImGui_ButtonEx("", joystick_button_size)) input_state.down = true;
-		else if(ImGui_IsItemActive()) input_state.down = true;
-
-		ImGui_EndGroup();
-	}
-	ImGui_End();
-	*/
-
-	ImVec2 joystick_size = {400.0f, 400.0f};
-	float joystick_radius = 70.0f;
-	ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
+	// Joystick	
 	ImVec2 joystick_center = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};
 
 	ImGui_Begin("Input", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
@@ -249,6 +323,7 @@ static void process_input(InputSystem input_system, float deltatime)
 		ImGui_SetCursorPos(joystick_circle_pos);
 		if(ImGui_IsItemActive() && ImGui_IsMouseDragging(0, -1.0f))
 		{
+			joystick_color = (ImVec4){0.0f, 225.0f, 225.0f, 225.0f};
 			joystick_circle_pos = imgui_io->MousePos;
 			vec2s mouse_drag_delta = (vec2s){ImGui_GetMouseDragDelta(0, -1.0f).x, ImGui_GetMouseDragDelta(0, -1.0f).y};
 
@@ -272,10 +347,11 @@ static void process_input(InputSystem input_system, float deltatime)
 		}
 		else
 		{
+			joystick_color = (ImVec4){225.0f, 225.0f, 225.0f, 225.0f};
 			joystick_circle_pos = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};;
 		}
 	}
-	ImGui_End();	
+	ImGui_End();
 }
 
 static void activate()
@@ -288,11 +364,13 @@ static void deactivate()
 
 static void destroy()
 {
-	destroyMap();
+	destroy_texture(&map->component_list.sprite_component.texture);
+	destroy_shader_program(&map->component_list.sprite_component.shader_program);
+	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs);
 	
-	destroyTexture(&player->component_list.sprite_component.texture);
-	destroyVertexAttributes(&player->component_list.sprite_component.vertex_attribs);
-	destroyShaderProgram(&player->component_list.sprite_component.shader_program);
+	destroy_texture(&player->component_list.sprite_component.texture);
+	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs);
+	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }
 
 Scene ScenePlay = {"ScenePlay", init, destroy, activate, deactivate, update, render, process_input};

@@ -15,12 +15,12 @@ typedef struct
 	void (*process_input)(InputSystem, float);
 } Scene;
 
-void addScene(Scene* scene);
-void changeScene(char* scene_name);
+void add_scene(Scene* scene);
+void change_scene(char* scene_name);
 
-void initScene();
-void updateScene(float deltatime);
-void renderScene();
-void sceneProcessInput(InputSystem input_system, float deltatime);
-void destroyScene();
-void destroyScenes();
+void init_scene();
+void update_scene(float deltatime);
+void render_scene();
+void scene_process_input(InputSystem input_system, float deltatime);
+void destroy_scene();
+void destroy_scenes();

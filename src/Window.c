@@ -16,9 +16,9 @@
 
 static Window* current_window = NULL;
 
-static void GLFW_error_callback(int errorCode, const char* errorDescription)
+static void GLFW_error_callback(int errorcode, const char* error_description)
 {
-	log_error("GLFW Error: [Error Code]: %d, [Error Description]: \n%s\n", errorCode, errorDescription);
+	log_error("GLFW Error: [Error Code]: %d, [Error Description]: \n%s\n", errorcode, error_description);
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -37,7 +37,7 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void initWindow(Window* window)
+void init_window(Window* window)
 {
 	current_window = window;
 
@@ -79,22 +79,22 @@ void initWindow(Window* window)
 	glfwSetFramebufferSizeCallback(window->handle, framebuffer_size_callback);
 }
 
-void windowPollEvents()
+void window_poll_events()
 {
 	glfwPollEvents();
 }
 
-void windowSwapBuffers(Window* window)
+void window_swap_buffers(Window* window)
 {
 	glfwSwapBuffers(window->handle);
 }
 
-int shouldWindowClose(Window* window)
+int should_window_close(Window* window)
 {
 	return glfwWindowShouldClose(window->handle);
 }
 
-void changeWindowColor(char colorCode[7], float alpha)
+void change_window_color(char colorcode[7], float alpha)
 {
 	char hexString[9] = {};
 
@@ -104,7 +104,7 @@ void changeWindowColor(char colorCode[7], float alpha)
 
 	for(size_t i = 0; i < 6; i++)
 	{
-		hexString[i+2] = colorCode[i+1];
+		hexString[i+2] = colorcode[i+1];
 	}
 
 	int hexCode = strtol(hexString, NULL, 16);
@@ -112,7 +112,7 @@ void changeWindowColor(char colorCode[7], float alpha)
 	glClearColor(((hexCode >> 16) & 0xFF)/255.0f, ((hexCode >> 8) & 0xFF)/255.0f, ((hexCode) & 0xFF)/255.0f, alpha);
 }
 
-void destroyWindow(Window* window)
+void destroy_window(Window* window)
 {
 	glfwDestroyWindow(window->handle);
 	glfwTerminate();

@@ -4,153 +4,153 @@
 #include <cJSON.h>
 #include <hashmap.h>
 
-struct hashmap* spriteSheetHashMap;
+struct hashmap* sprite_sheet_hashmap;
 
-int spriteSheetCompare(const void* a, const void* b, void* udata)
+int sprite_sheet_compare(const void* a, const void* b, void* udata)
 {
 	const SpriteSheet* ua = a;
 	const SpriteSheet* ub = b;
 	return strcmp(ua->name, ub->name);
 }
 
-int spriteCompare(const void* a, const void* b, void* udata)
+int sprite_compare(const void* a, const void* b, void* udata)
 {
 	const Sprite* ua = a;
 	const Sprite* ub = b;
 	return strcmp(ua->name, ub->name);
 }
 
-uint64_t spriteSheetHash(const void* item, uint64_t seed0, uint64_t seed1)
+uint64_t sprite_sheet_hash(const void* item, uint64_t seed0, uint64_t seed1)
 {
 	const SpriteSheet* sheet = item;
 	return hashmap_sip(sheet->name, strlen(sheet->name), seed0, seed1);
 }
 
-uint64_t spriteHash(const void* item, uint64_t seed0, uint64_t seed1)
+uint64_t sprite_hash(const void* item, uint64_t seed0, uint64_t seed1)
 {
 	const Sprite* sprite = item;
 	return hashmap_sip(sprite->name, strlen(sprite->name), seed0, seed1);
 }
 
-void initSpriteSheet()
+void init_spritesheet()
 {
-	spriteSheetHashMap = hashmap_new(sizeof(SpriteSheet), 0, 0, 0, spriteSheetHash, spriteSheetCompare, NULL, NULL);
+	sprite_sheet_hashmap = hashmap_new(sizeof(SpriteSheet), 0, 0, 0, sprite_sheet_hash, sprite_sheet_compare, NULL, NULL);
 
-	char* textureJsonString = read_file("spritesheets.json", "r");
-	cJSON* textureJson = cJSON_Parse(textureJsonString);
+	char* texture_json_string = read_file("spritesheets.json", "r");
+	cJSON* texture_json = cJSON_Parse(texture_json_string);
 
-	cJSON* spriteSheetsJson = cJSON_GetObjectItemCaseSensitive(textureJson, "spriteSheets");
+	cJSON* spritesheets_json = cJSON_GetObjectItemCaseSensitive(texture_json, "spritesheets");
 
-	cJSON* spriteSheetJson;
-	cJSON_ArrayForEach(spriteSheetJson, spriteSheetsJson)
+	cJSON* spriteSheet_json;
+	cJSON_ArrayForEach(spriteSheet_json, spritesheets_json)
 	{
-		char* sheetName = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "name")->valuestring);
-		char* sheetPath = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "path")->valuestring);
-		char* sheetDefaultSprite = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "defaultSprite")->valuestring);
-		int sheetWidth = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "width")->valueint;
-		int sheetHeight = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "height")->valueint;
-		int sheetType = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "type")->valueint;
+		char* sheet_name = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "name")->valuestring);
+		char* sheet_path = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "path")->valuestring);
+		char* sheet_default_sprite = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "default_sprite")->valuestring);
+		int sheet_width = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "width")->valueint;
+		int sheet_height = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "height")->valueint;
+		int sheet_type = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "type")->valueint;
 
-		struct hashmap* spriteHashMap = hashmap_new(sizeof(Sprite), 0, 0, 0, spriteHash, spriteCompare, NULL, NULL);
+		struct hashmap* sprite_hashmap = hashmap_new(sizeof(Sprite), 0, 0, 0, sprite_hash, sprite_compare, NULL, NULL);
 
-		cJSON* spritesJson = cJSON_GetObjectItemCaseSensitive(spriteSheetJson, "sprites");
+		cJSON* sprites_json = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "sprites");
 
-		cJSON* spriteJson;
+		cJSON* sprite_json;
 
-		cJSON_ArrayForEach(spriteJson, spritesJson)
+		cJSON_ArrayForEach(sprite_json, sprites_json)
 		{
-			char* spriteName = strdup(cJSON_GetObjectItemCaseSensitive(spriteJson, "name")->valuestring);
-			int spriteX = cJSON_GetObjectItemCaseSensitive(spriteJson, "x")->valueint;
-			int spriteY = cJSON_GetObjectItemCaseSensitive(spriteJson, "y")->valueint;
-			int spriteFrameSpeed = cJSON_GetObjectItemCaseSensitive(spriteJson, "frameSpeed")->valueint;
-			int spriteCount = cJSON_GetObjectItemCaseSensitive(spriteJson, "spriteCount")->valueint;
-			int spriteWidth = cJSON_GetObjectItemCaseSensitive(spriteJson, "spriteWidth")->valueint;
-			int spriteHeight = cJSON_GetObjectItemCaseSensitive(spriteJson, "spriteHeight")->valueint;	
+			char* sprite_name = strdup(cJSON_GetObjectItemCaseSensitive(sprite_json, "name")->valuestring);
+			int sprite_x = cJSON_GetObjectItemCaseSensitive(sprite_json, "x")->valueint;
+			int sprite_y = cJSON_GetObjectItemCaseSensitive(sprite_json, "y")->valueint;
+			int sprite_frame_speed = cJSON_GetObjectItemCaseSensitive(sprite_json, "frame_speed")->valueint;
+			int sprite_count = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_count")->valueint;
+			int sprite_width = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_width")->valueint;
+			int sprite_height = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_height")->valueint;
 
-			hashmap_set(spriteHashMap, &(Sprite){
-				.name=spriteName,
-				.x=spriteX, .y=spriteY,
-				.frameSpeed=spriteFrameSpeed,
-				.spriteCount=spriteCount,
-				.spriteWidth=spriteWidth, .spriteHeight=spriteHeight,
+			hashmap_set(sprite_hashmap, &(Sprite){
+				.name=sprite_name,
+				.x=sprite_x, .y=sprite_y,
+				.frame_speed=sprite_frame_speed,
+				.sprite_count=sprite_count,
+				.sprite_width=sprite_width, .sprite_height=sprite_height,
 			});
 		}
 
-		hashmap_set(spriteSheetHashMap, &(SpriteSheet){
-			.name=sheetName,
-			.path=sheetPath,
-			.type=sheetType,
-			.defaultSprite=sheetDefaultSprite,
-			.width=sheetWidth, .height=sheetHeight,
-			.spriteHashMap=spriteHashMap
+		hashmap_set(sprite_sheet_hashmap, &(SpriteSheet){
+			.name=sheet_name,
+			.path=sheet_path,
+			.type=sheet_type,
+			.default_sprite=sheet_default_sprite,
+			.width=sheet_width, .height=sheet_height,
+			.sprite_hashmap=sprite_hashmap
 		});
 	}
 
-	cJSON_Delete(textureJson);
-	free(textureJsonString);
+	cJSON_Delete(texture_json);
+	free(texture_json_string);
 }
 
-void getSpriteAnimation(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite, int frame)
+void get_sprite_animation(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite, int frame)
 {
 	float x1, x2, y1, y2;
 
-	if(spriteSheet->type == SHEET_HORIZONTAL)
+	if(spritesheet->type == SHEET_HORIZONTAL)
 	{
-		x1 = (float)(frame * sprite->spriteWidth)/spriteSheet->width;
-		x2 = (float)((frame + 1) * sprite->spriteWidth)/spriteSheet->width;
-		y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
-		y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+		x1 = (float)(frame * sprite->sprite_width)/spritesheet->width;
+		x2 = (float)((frame + 1) * sprite->sprite_width)/spritesheet->width;
+		y1 = (float)(sprite->y * sprite->sprite_height)/spritesheet->height;
+		y2 = (float)((sprite->y + 1) * sprite->sprite_height)/spritesheet->height;
 	}
-	if(spriteSheet->type == SHEET_VERTICAL)
+	if(spritesheet->type == SHEET_VERTICAL)
 	{
-		x1 = (float)(sprite->x * sprite->spriteWidth)/spriteSheet->width;
-		x2 = (float)((sprite->x + 1) * sprite->spriteWidth)/spriteSheet->width;
-		y1 = (float)(frame * sprite->spriteHeight)/spriteSheet->height;
-		y2 = (float)((frame + 1) * sprite->spriteHeight)/spriteSheet->height;
+		x1 = (float)(sprite->x * sprite->sprite_width)/spritesheet->width;
+		x2 = (float)((sprite->x + 1) * sprite->sprite_width)/spritesheet->width;
+		y1 = (float)(frame * sprite->sprite_height)/spritesheet->height;
+		y2 = (float)((frame + 1) * sprite->sprite_height)/spritesheet->height;
 	}
 	
 
-	quad->vertices[0].texCoord = (vec2s){{x2, y2}};
-	quad->vertices[1].texCoord = (vec2s){{x2, y1}};
-	quad->vertices[2].texCoord = (vec2s){{x1, y1}};
-	quad->vertices[3].texCoord = (vec2s){{x1, y2}};
+	quad->vertices[0].tex_coord = (vec2s){{x2, y2}};
+	quad->vertices[1].tex_coord = (vec2s){{x2, y1}};
+	quad->vertices[2].tex_coord = (vec2s){{x1, y1}};
+	quad->vertices[3].tex_coord = (vec2s){{x1, y2}};
 }
 
-void getSpriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite)
+void get_spriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite)
 {
-	float x1 = (float)(sprite->x * sprite->spriteWidth)/spriteSheet->width;
-	float x2 = (float)((sprite->x + 1) * sprite->spriteWidth)/spriteSheet->width;
+	float x1 = (float)(sprite->x * sprite->sprite_width)/spriteSheet->width;
+	float x2 = (float)((sprite->x + 1) * sprite->sprite_width)/spriteSheet->width;
 
-	float y1 = (float)(sprite->y * sprite->spriteHeight)/spriteSheet->height;
-	float y2 = (float)((sprite->y + 1) * sprite->spriteHeight)/spriteSheet->height;
+	float y1 = (float)(sprite->y * sprite->sprite_height)/spriteSheet->height;
+	float y2 = (float)((sprite->y + 1) * sprite->sprite_height)/spriteSheet->height;
 
-	quad->vertices[0].texCoord = (vec2s){{x2, y2}};
-	quad->vertices[1].texCoord = (vec2s){{x2, y1}};
-	quad->vertices[2].texCoord = (vec2s){{x1, y1}};
-	quad->vertices[3].texCoord = (vec2s){{x1, y2}};
+	quad->vertices[0].tex_coord = (vec2s){{x2, y2}};
+	quad->vertices[1].tex_coord = (vec2s){{x2, y1}};
+	quad->vertices[2].tex_coord = (vec2s){{x1, y1}};
+	quad->vertices[3].tex_coord = (vec2s){{x1, y2}};
 }
 
-void destroySpriteSheet()
+void destroy_spriteSheet()
 {
 	size_t i = 0;
     void* data;
-    while(hashmap_iter(spriteSheetHashMap, &i, &data))
+    while(hashmap_iter(sprite_sheet_hashmap, &i, &data))
 	{
 		SpriteSheet* sheet = data;
 		free(sheet->name);
 		free(sheet->path);
-		free(sheet->defaultSprite);
+		free(sheet->default_sprite);
 
 		size_t j = 0;
 		void* d;
-		while(hashmap_iter(sheet->spriteHashMap, &j, &d))
+		while(hashmap_iter(sheet->sprite_hashmap, &j, &d))
 		{
 			Sprite* sprite = d;
 			free(sprite->name);
 		}
 
-		hashmap_free(sheet->spriteHashMap);
+		hashmap_free(sheet->sprite_hashmap);
     }
 
-	hashmap_free(spriteSheetHashMap);
+	hashmap_free(sprite_sheet_hashmap);
 }

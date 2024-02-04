@@ -7,13 +7,13 @@ static struct { char* key; Scene* value; }* scenes = NULL;
 static Scene* current_scene;
 static unsigned int total_scenes;
 
-void addScene(Scene* scene)
+void add_scene(Scene* scene)
 {
 	shput(scenes, scene->scene_name, scene);
 	total_scenes++;
 }
 
-void changeScene(char* scene_name)
+void change_scene(char* scene_name)
 {
 	Scene* s = shget(scenes, scene_name);
 
@@ -27,32 +27,32 @@ void changeScene(char* scene_name)
 	current_scene->activate();
 }
 
-void initScene(Window* window)
+void init_scene(Window* window)
 {
 	current_scene->init(window);
 }
 
-void updateScene(float deltatime)
+void update_scene(float deltatime)
 {
 	current_scene->update(deltatime);
 }
 
-void renderScene()
+void render_scene()
 {
 	current_scene->render();
 }
 
-void sceneProcessInput(InputSystem input_system, float deltatime)
+void scene_process_input(InputSystem input_system, float deltatime)
 {
 	current_scene->process_input(input_system, deltatime);
 }
 
-void destroyScene()
+void destroy_scene()
 {
 	current_scene->destroy();
 }
 
-void destroyScenes()
+void destroy_scenes()
 {
 	for(int i = 0; i < shlen(scenes); i++)
 	{

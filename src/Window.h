@@ -19,10 +19,10 @@ typedef struct
 	InputSystem input_system;
 } Window;
 
-void initWindow(Window* window);
-int shouldWindowClose(Window* window);
-void windowPollEvents();
-void windowSwapBuffers(Window* window);
-void changeWindowColor(char colorCode[7], float alpha);
-void destroyWindow(Window* window);
+void init_window(Window* window);
+int should_window_close(Window* window);
+void window_poll_events();
+void window_swap_buffers(Window* window);
+void change_window_color(char colorcode[7], float alpha);
+void destroy_window(Window* window);
 
