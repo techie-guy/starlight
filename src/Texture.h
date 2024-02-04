@@ -11,14 +11,14 @@
 
 typedef struct
 {
-	unsigned int textureId;
+	unsigned int texture_id;
 	int width;
 	int height;
 } Texture;
 
-void initTextureFromFile(Texture* texture, const char* texturePath);
-void initTextureFromData(Texture* texture, GLint level, GLint internalformat, GLenum format, GLenum type, void* textureData);
-void setTextureParameteri(GLenum target, GLenum pname, GLint param);
-void bindTexture(Texture* texture);
-void unbindTexture();
-void destroyTexture(Texture* texture);
+void init_texture_from_file(Texture* texture, const char* texture_path);
+void init_texture_from_data(Texture* texture, GLint level, GLint internalformat, GLenum format, GLenum type, void* texture_data);
+void set_texture_parameteri(GLenum target, GLenum pname, GLint param);
+void bind_texture(Texture* texture);
+void unbind_texture();
+void destroy_texture(Texture* texture);

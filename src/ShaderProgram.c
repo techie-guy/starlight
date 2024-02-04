@@ -11,10 +11,10 @@
 #endif
 
 
-void checkForErrors(unsigned int id, int status)
+void check_for_errors(unsigned int id, int status)
 {
 	int success;
-	char infoLog[512];
+	char info_log[512];
 
 	if(status == GL_COMPILE_STATUS)
 	{
@@ -22,8 +22,8 @@ void checkForErrors(unsigned int id, int status)
 
 		if(!success)
 		{
-			glGetShaderInfoLog(id, 512, NULL, infoLog);
-			log_error("Error in Compiling Shader\n%s\n", infoLog);
+			glGetShaderInfoLog(id, 512, NULL, info_log);
+			log_error("Error in Compiling Shader\n%s\n", info_log);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -33,88 +33,88 @@ void checkForErrors(unsigned int id, int status)
 
 		if(!success)
 		{
-			glGetProgramInfoLog(id, 512, NULL, infoLog);
-			log_error("Error in Linking Shaders\n%s\n", infoLog);
+			glGetProgramInfoLog(id, 512, NULL, info_log);
+			log_error("Error in Linking Shaders\n%s\n", info_log);
 			exit(EXIT_FAILURE);
 		}
 	}
 }
 
-void compileShader(unsigned int* shader, const int shaderType, const char** shaderSource)
+void compileShader(unsigned int* shader, const int shader_type, const char** shader_source)
 {
-	*shader = glCreateShader(shaderType);
-	glShaderSource(*shader, 1, shaderSource, NULL);
+	*shader = glCreateShader(shader_type);
+	glShaderSource(*shader, 1, shader_source, NULL);
 	glCompileShader(*shader);
 
-	checkForErrors(*shader, GL_COMPILE_STATUS);
+	check_for_errors(*shader, GL_COMPILE_STATUS);
 }
 
-void initShaderProgram(unsigned int* shaderProgram, const char* vertexShaderSourcePath, const char* fragmentShaderSourcePath)
+void init_shader_program(unsigned int* shader_program, const char* vertex_shader_source_path, const char* fragment_shader_source_path)
 {
-	char* vertexShaderSource = read_file(vertexShaderSourcePath, "r");
-	char* fragmentShaderSource = read_file(fragmentShaderSourcePath, "r");
+	char* vertex_shader_source = read_file(vertex_shader_source_path, "r");
+	char* fragment_shader_source = read_file(fragment_shader_source_path, "r");
 
-	unsigned int vertexShader;
-	compileShader(&vertexShader, GL_VERTEX_SHADER, (const char**)&vertexShaderSource);
+	unsigned int vertex_shader;
+	compileShader(&vertex_shader, GL_VERTEX_SHADER, (const char**)&vertex_shader_source);
 
-	unsigned int fragmentShader;
-	compileShader(&fragmentShader, GL_FRAGMENT_SHADER, (const char**)&fragmentShaderSource);
+	unsigned int fragment_shader;
+	compileShader(&fragment_shader, GL_FRAGMENT_SHADER, (const char**)&fragment_shader_source);
 
-	*shaderProgram = glCreateProgram();
-	glAttachShader(*shaderProgram, vertexShader);
-	glAttachShader(*shaderProgram, fragmentShader);
-	glLinkProgram(*shaderProgram);
+	*shader_program = glCreateProgram();
+	glAttachShader(*shader_program, vertex_shader);
+	glAttachShader(*shader_program, fragment_shader);
+	glLinkProgram(*shader_program);
 
-	checkForErrors(*shaderProgram, GL_LINK_STATUS);
+	check_for_errors(*shader_program, GL_LINK_STATUS);
 
-	free(vertexShaderSource);
-	free(fragmentShaderSource);
+	free(vertex_shader_source);
+	free(fragment_shader_source);
 
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
 }
 
-void bindShaderProgram(unsigned int* shaderProgram)
+void bind_shader_program(unsigned int* shader_program)
 {
-	glUseProgram(*shaderProgram);
+	glUseProgram(*shader_program);
 }
 
-int getUniformLocation(unsigned int* shaderProgram, const char* uniformName)
+int get_uniform_location(unsigned int* shader_program, const char* uniform_name)
 {
-	return glGetUniformLocation(*shaderProgram, uniformName);
+	return glGetUniformLocation(*shader_program, uniform_name);
 }
 
-void uniformInt(unsigned int* shaderProgram, const char* uniformName, int data)
+void uniform_int(unsigned int* shader_program, const char* uniform_name, int data)
 {
-	glUniform1i(getUniformLocation(shaderProgram, uniformName), data);
+	glUniform1i(get_uniform_location(shader_program, uniform_name), data);
 }
 
-void uniformFloat(unsigned int* shaderProgram, const char* uniformName, float data)
+void uniform_float(unsigned int* shader_program, const char* uniform_name, float data)
 {
-	glUniform1f(getUniformLocation(shaderProgram, uniformName), data);
+	glUniform1f(get_uniform_location(shader_program, uniform_name), data);
 }
 
-void uniformVec2(unsigned int* shaderProgram, const char* uniformName, vec2s data)
+void uniform_vec2(unsigned int* shader_program, const char* uniform_name, vec2s data)
 {
-	glUniform2fv(getUniformLocation(shaderProgram, uniformName), 1, data.raw);
+	glUniform2fv(get_uniform_location(shader_program, uniform_name), 1, data.raw);
 }
 
-void uniformVec3(unsigned int* shaderProgram, const char* uniformName, vec3s data)
+void uniform_vec3(unsigned int* shader_program, const char* uniform_name, vec3s data)
 {
-	glUniform3fv(getUniformLocation(shaderProgram, uniformName), 1, data.raw);
+	glUniform3fv(get_uniform_location(shader_program, uniform_name), 1, data.raw);
 }
 
-void uniformVec4(unsigned int* shaderProgram, const char* uniformName, vec4s data)
+void uniform_vec4(unsigned int* shader_program, const char* uniform_name, vec4s data)
 {
-	glUniform4fv(getUniformLocation(shaderProgram, uniformName), 1, data.raw);
+	glUniform4fv(get_uniform_location(shader_program, uniform_name), 1, data.raw);
 }
 
-void uniformMat4(unsigned int* shaderProgram, const char* uniformName, mat4s data)
+void uniform_mat4(unsigned int* shader_program, const char* uniform_name, mat4s data)
 {
-	glUniformMatrix4fv(getUniformLocation(shaderProgram, uniformName), 1, GL_FALSE, (float*)data.raw);
+	glUniformMatrix4fv(get_uniform_location(shader_program, uniform_name), 1, GL_FALSE, (float*)data.raw);
 }
 
-void destroyShaderProgram(unsigned int* shaderProgram)
+void destroy_shader_program(unsigned int* shader_program)
 {
-	glDeleteProgram(*shaderProgram);
+	glDeleteProgram(*shader_program);
 }

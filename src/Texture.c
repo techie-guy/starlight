@@ -3,52 +3,52 @@
 
 #include <stb_image.h>
 
-void initTextureFromFile(Texture* texture, const char* texturePath)
+void init_texture_from_file(Texture* texture, const char* texture_path)
 {
 	stbi_set_flip_vertically_on_load(true);
 
 	int channels;
 
-	unsigned char* textureData = stbi_load(texturePath, &texture->width, &texture->height, &channels, 0);
-	if(!textureData)
+	unsigned char* texture_data = stbi_load(texture_path, &texture->width, &texture->height, &channels, 0);
+	if(!texture_data)
 	{
-		log_error("Invalid Texture Data: %s", texturePath);
+		log_error("Invalid Texture Data: %s\n", texture_path);
 	}
 
-	initTextureFromData(texture, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+	init_texture_from_data(texture, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
 
-	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	stbi_image_free(textureData);
+	stbi_image_free(texture_data);
 }
 
-void initTextureFromData(Texture* texture, GLint level, GLint internalformat, GLenum format, GLenum type, void* textureData)
+void init_texture_from_data(Texture* texture, GLint level, GLint internalformat, GLenum format, GLenum type, void* texture_data)
 {
-	glGenTextures(1, &texture->textureId);
-	bindTexture(texture);
+	glGenTextures(1, &texture->texture_id);
+	bind_texture(texture);
 
-	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, textureData);
+	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, texture_data);
 }
 
-void setTextureParameteri(GLenum target, GLenum pname, GLint param)
+void set_texture_parameteri(GLenum target, GLenum pname, GLint param)
 {
 	glTexParameteri(target, pname, param);
 }
 
-void bindTexture(Texture* texture)
+void bind_texture(Texture* texture)
 {
-	glBindTexture(GL_TEXTURE_2D, texture->textureId);
+	glBindTexture(GL_TEXTURE_2D, texture->texture_id);
 }
 
-void unbindTexture()
+void unbind_texture()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void destroyTexture(Texture* texture)
+void destroy_texture(Texture* texture)
 {
-	glDeleteTextures(1, &texture->textureId);
+	glDeleteTextures(1, &texture->texture_id);
 }

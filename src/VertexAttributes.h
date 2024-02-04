@@ -7,7 +7,7 @@ typedef struct
 {
 	vec3s position;
 	vec4s color;
-	vec2s texCoord;
+	vec2s tex_coord;
 } Vertex;
 
 typedef struct
@@ -29,10 +29,7 @@ enum Buffers
 	EBO
 };
 
-void initVertexAttributes(VertexAttributes* attrib, void* vertexData, size_t vertexDataSize, void* indexData, size_t indexDataSize);
-void bindBuffer(VertexAttributes* attrib, enum Buffers buffer);
-void unbindBuffer(VertexAttributes* attrib, enum Buffers buffer);
-//void bindVAO(VertexAttributes* attrib);
-//void bindVBO(VertexAttributes* attrib);
-//void bindEBO(VertexAttributes* attrib);
-void destroyVertexAttributes(VertexAttributes* attrib);
+void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t vertex_data_size, void* index_data, size_t index_data_size);
+void bind_vertex_buffer(VertexAttributes* attrib, enum Buffers buffer);
+void unbind_vertex_buffer(VertexAttributes* attrib, enum Buffers buffer);
+void destroy_vertex_attributes(VertexAttributes* attrib);

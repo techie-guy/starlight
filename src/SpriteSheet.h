@@ -9,10 +9,10 @@ typedef struct
 	char* name;
 	int x;
 	int y;
-	int frameSpeed;
-	int spriteCount;
-	int spriteWidth;
-	int spriteHeight;
+	int frame_speed;
+	int sprite_count;
+	int sprite_width;
+	int sprite_height;
 } Sprite;
 
 enum SpriteSheetType
@@ -25,16 +25,16 @@ typedef struct
 {
 	char* name;
 	char* path;
-	char* defaultSprite;
+	char* default_sprite;
 	enum SpriteSheetType type;
 	int width;
 	int height;
-	struct hashmap* spriteHashMap;
+	struct hashmap* sprite_hashmap;
 } SpriteSheet;
 
-extern struct hashmap* spriteSheetHashMap;
+extern struct hashmap* sprite_sheet_hashmap;
 
-void initSpriteSheet();
-void getSpriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite);
-void getSpriteAnimation(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite, int frame);
-void destroySpriteSheet();
+void init_spritesheet();
+void get_spriteUV(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite);
+void get_sprite_animation(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite, int frame);
+void destroy_spriteSheet();

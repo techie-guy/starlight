@@ -53,9 +53,9 @@ typedef struct
 
 // Printing Macros
 #define log_debug(...) LOG("%s[Debug]: %s", COLOR_BOLD_WHITE, COLOR_WHITE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
-#define log_info(...) LOG("%s[Info]: %s", COLOR_BOLD_WHITE, COLOR_BLUE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
-#define log_warn(...) LOG("%s[Warning]: %s", COLOR_BOLD_WHITE, COLOR_YELLOW); LOG(__VA_ARGS__); LOG(COLOR_RESET)
-#define log_error(...) LOG("%s[Error]: %s", COLOR_BOLD_WHITE, COLOR_RED); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_info(...) LOG("%s[Info]: %s", COLOR_BOLD_BLUE, COLOR_WHITE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_warn(...) LOG("%s[Warning]: %s", COLOR_BOLD_YELLOW, COLOR_WHITE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
+#define log_error(...) LOG("%s[Error]: %s", COLOR_BOLD_RED, COLOR_WHITE); LOG(__VA_ARGS__); LOG(COLOR_RESET)
 
 // Functions
 char* read_file(const char* filepath, const char* mode);

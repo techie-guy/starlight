@@ -47,14 +47,14 @@ void init()
 	chdir("./assets");
 #endif
 
-	initWindow(&window);
-	changeWindowColor("#034694", 1.0f);
+	init_window(&window);
+	change_window_color("#034694", 1.0f);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
-	initSpriteSheet();
-	initFontRenderer("fonts/font.ttf", 96, &window);
+	init_spritesheet();
+	init_font_renderer("fonts/font.ttf", 96, &window);
 
 	// Init ImGui
 	ImGui_CreateContext(NULL);
@@ -81,12 +81,12 @@ void init()
 	cImGui_ImplOpenGL3_InitEx("#version 100");
 
 	// Scene
-	addScene(&ScenePlay);
-	changeScene("ScenePlay");
-	initScene(&window);
+	add_scene(&ScenePlay);
+	change_scene("ScenePlay");
+	init_scene(&window);
 }
 
-void renderFrame()
+void render_frame()
 {
 	{
 		current_frame = glfwGetTime();
@@ -94,9 +94,9 @@ void renderFrame()
 		last_frame = current_frame;
 	}
 
-	windowPollEvents();
+	window_poll_events();
 
-	updateScene(deltatime);
+	update_scene(deltatime);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -104,38 +104,38 @@ void renderFrame()
 	cImGui_ImplGlfw_NewFrame();
 	ImGui_NewFrame();
 
-	sceneProcessInput(window.input_system, deltatime);
-	renderScene();
+	scene_process_input(window.input_system, deltatime);
+	render_scene();
 
 	ImGui_Render();
 
 	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
 
-	windowSwapBuffers(&window);
+	window_swap_buffers(&window);
 }
 
 void cleanup()
 {
-	destroyECS();
-	destroyScenes();
+	destroy_ECS();
+	destroy_scenes();
 
-	destroySpriteSheet();
+	destroy_spriteSheet();
 
 	cImGui_ImplOpenGL3_Shutdown();
 	cImGui_ImplGlfw_Shutdown();
 	ImGui_DestroyContext(NULL);
 
-	destroyWindow(&window);
+	destroy_window(&window);
 }
 
-void runApplication()
+void run_application()
 {
 	init();
 	
 #if !defined(_PLATFORM_WEB)
-	while(!shouldWindowClose(&window))
+	while(!should_window_close(&window))
 	{
-		renderFrame();
+		render_frame();
 	}
 #else
 	emscripten_set_main_loop(renderFrame, 0, true);

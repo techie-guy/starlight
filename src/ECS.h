@@ -11,6 +11,6 @@ typedef struct
 	ComponentList component_list;
 } Entity;
 
-Entity* addEntity(char* tag);
-void destroyECS();
+Entity* add_entity(char* tag);
+void destroy_ECS();
 

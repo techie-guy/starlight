@@ -45,12 +45,12 @@ static GLushort indices[6] =
 
 mat4s projection = GLMS_MAT4_IDENTITY_INIT;
 
-void initFontRenderer(const char* font_path, int character_size, Window* window)
+void init_font_renderer(const char* font_path, int character_size, Window* window)
 {
 	current_window = window;
 
-	initShaderProgram(&shader_program, FONT_VERTEX_SHADER_PATH, FONT_FRAGMENT_SHADER_PATH);	
-	initVertexAttributes(&vertex_attributes, NULL, sizeof(Quad), indices, sizeof(indices));
+	init_shader_program(&shader_program, FONT_VERTEX_SHADER_PATH, FONT_FRAGMENT_SHADER_PATH);
+	init_vertex_attributes(&vertex_attributes, NULL, sizeof(Quad), indices, sizeof(indices));
 
 	//  Loading the .ttf file
 	buffer = (unsigned char*)read_file(font_path, "rb");
@@ -70,13 +70,13 @@ void initFontRenderer(const char* font_path, int character_size, Window* window)
 		Texture texture;
 		texture.width = width;
 		texture.height = height;
-		initTextureFromData(&texture, 0, GL_R8, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+		init_texture_from_data(&texture, 0, GL_R8, GL_RED, GL_UNSIGNED_BYTE, bitmap);
 
 		// set texture options
-		setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    	setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	    setTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 		// now store character for later use
 	    Character character = 
@@ -88,19 +88,19 @@ void initFontRenderer(const char* font_path, int character_size, Window* window)
     	};
 		hmput(characters, c, character);
 	}
-	unbindTexture();
+	unbind_texture();
 }
 
 // BUG: Blurry text if scale is not 1.0
 // BUG: Text not aligned properly
-void renderText(char* text, float x, float y, float scale, vec3s color)
+void render_text(char* text, float x, float y, float scale, vec3s color)
 {
-	bindShaderProgram(&shader_program);
+	bind_shader_program(&shader_program);
 	projection = glms_ortho(0, current_window->width, 0, current_window->height, -1.0f, 1.0f);
-	uniformMat4(&shader_program, "projection", projection);
-	uniformVec3(&shader_program, "textColor", color);
+	uniform_mat4(&shader_program, "projection", projection);
+	uniform_vec3(&shader_program, "text_color", color);
 
-	bindBuffer(&vertex_attributes, VAO);
+	bind_vertex_buffer(&vertex_attributes, VAO);
 
 	for(char* c = text; *c != '\0'; c++)
 	{
@@ -136,15 +136,15 @@ void renderText(char* text, float x, float y, float scale, vec3s color)
 		};
 
         // render glyph texture over quad
-		bindTexture(&ch.texture);
+		bind_texture(&ch.texture);
         // update content of VBO memory
-		bindBuffer(&vertex_attributes, VBO);
+		bind_vertex_buffer(&vertex_attributes, VBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad);
         // render quad
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
         x += w;
 	}
 
-	unbindBuffer(&vertex_attributes, VAO);
-	unbindTexture();
+	unbind_vertex_buffer(&vertex_attributes, VAO);
+	unbind_texture();
 }
