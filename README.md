@@ -32,7 +32,7 @@ The executable is in `bin/CONFIG/mist-lib/mist-lib`,
 
 ## Android Support
 ### Using Gradle
-Use `premake5 androidndk` to generate the build files
+Use `sh generate-source-files.sh && premake5 androidndk` to generate the build files
 
 Then `cd` into `android-project` and use `gradle build`
 
