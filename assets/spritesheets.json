@@ -64,7 +64,7 @@
 				"sprite_height": 32
 			},
 			{
-				"name": "move-right",
+				"name": "move-left",
 				"x": 4,
 				"y": 1,
 				"frame_speed": 10,
@@ -73,7 +73,7 @@
 				"sprite_height": 32
 			},
 			{
-				"name": "move-left",
+				"name": "move-right",
 				"x": 6,
 				"y": 1,
 				"frame_speed": 10,
