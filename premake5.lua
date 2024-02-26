@@ -217,7 +217,7 @@ filter { "platforms:Android" }
 		}
 		filter{}
 filter{}
-	
+
 
 project "glfw"
 	kind "StaticLib"
