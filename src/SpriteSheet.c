@@ -116,18 +116,13 @@ void get_sprite_animation(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite, 
 	quad->vertices[3].tex_coord = (vec2s){{x1, y2}};
 }
 
-void get_spriteUV(Quad* quad, SpriteSheet* spriteSheet, Sprite* sprite)
+void get_spriteUV(UV_Coords* uv_coords, SpriteSheet* spritesheet, Sprite* sprite)
 {
-	float x1 = (float)(sprite->x * sprite->sprite_width)/spriteSheet->width;
-	float x2 = (float)((sprite->x + 1) * sprite->sprite_width)/spriteSheet->width;
+	uv_coords->x1 = (float)(sprite->x * sprite->sprite_width)/spritesheet->width;
+	uv_coords->x2 = (float)((sprite->x + 1) * sprite->sprite_width)/spritesheet->width;
 
-	float y1 = (float)(sprite->y * sprite->sprite_height)/spriteSheet->height;
-	float y2 = (float)((sprite->y + 1) * sprite->sprite_height)/spriteSheet->height;
-
-	quad->vertices[0].tex_coord = (vec2s){{x2, y2}};
-	quad->vertices[1].tex_coord = (vec2s){{x2, y1}};
-	quad->vertices[2].tex_coord = (vec2s){{x1, y1}};
-	quad->vertices[3].tex_coord = (vec2s){{x1, y2}};
+	uv_coords->y1 = (float)(sprite->y * sprite->sprite_height)/spritesheet->height;
+	uv_coords->y2 = (float)((sprite->y + 1) * sprite->sprite_height)/spritesheet->height;
 }
 
 void destroy_spriteSheet()

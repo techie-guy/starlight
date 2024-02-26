@@ -32,9 +32,17 @@ typedef struct
 	struct hashmap* sprite_hashmap;
 } SpriteSheet;
 
+typedef struct
+{
+	float x1;
+	float x2;
+	float y1;
+	float y2;
+} UV_Coords;
+
 extern struct hashmap* sprite_sheet_hashmap;
 
 void init_spritesheet();
-void get_spriteUV(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite);
+void get_spriteUV(UV_Coords* uv_coords, SpriteSheet* spritesheet, Sprite* sprite);
 void get_sprite_animation(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite, int frame);
 void destroy_spriteSheet();
