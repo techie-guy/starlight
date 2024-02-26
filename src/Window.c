@@ -18,15 +18,34 @@ static Window* current_window = NULL;
 
 static void GLFW_error_callback(int errorcode, const char* error_description)
 {
-	log_error("GLFW Error: [Error Code]: %d, [Error Description]: \n%s\n", errorcode, error_description);
+	log_error("GLFW Error: [Error Code]: %d, [Error Description]: %s\n", errorcode, error_description);
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	current_window->input_system.key_pressed = true;
+
 	if(key >= 0 && key < GLFW_KEY_LAST)
 	{
 		current_window->input_system.key_pressed_data[key] = (action == GLFW_PRESS) || (action == GLFW_REPEAT);
 	}
+}
+
+static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	current_window->input_system.mouse_moved = true;
+	current_window->input_system.mouse_position = (vec2s){xpos, ypos};
+}
+
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	current_window->input_system.mouse_clicked = true;
+
+	if(button >= 0 && button < GLFW_MOUSE_BUTTON_LAST)
+	{
+		current_window->input_system.mouse_clicked_data[button] = (action == GLFW_PRESS) || (action == GLFW_REPEAT);
+	}
+
 }
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -76,11 +95,15 @@ void init_window(Window* window)
 	glViewport(0, 0, window->width, window->height);
 
 	glfwSetKeyCallback(window->handle, key_callback);
+	glfwSetCursorPosCallback(window->handle, mouse_callback);
+	glfwSetMouseButtonCallback(window->handle, mouse_button_callback);
 	glfwSetFramebufferSizeCallback(window->handle, framebuffer_size_callback);
 }
 
 void window_poll_events()
 {
+	current_window->input_system.key_pressed = false;
+	current_window->input_system.mouse_moved = false;
 	glfwPollEvents();
 }
 
@@ -94,22 +117,9 @@ int should_window_close(Window* window)
 	return glfwWindowShouldClose(window->handle);
 }
 
-void change_window_color(char colorcode[7], float alpha)
+void change_window_color(vec4s color)
 {
-	char hexString[9] = {};
-
-	hexString[0] = '0';
-	hexString[1] = 'x';
-	hexString[8] = '\0';
-
-	for(size_t i = 0; i < 6; i++)
-	{
-		hexString[i+2] = colorcode[i+1];
-	}
-
-	int hexCode = strtol(hexString, NULL, 16);
-
-	glClearColor(((hexCode >> 16) & 0xFF)/255.0f, ((hexCode >> 8) & 0xFF)/255.0f, ((hexCode) & 0xFF)/255.0f, alpha);
+	glClearColor(color.r, color.g, color.b, color.a);
 }
 
 void destroy_window(Window* window)
