@@ -4,12 +4,14 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "ECS.h"
+#include "UI-Imgui.h"
 #include "Utils.h"
 #include "VertexAttributes.h"
 #include "ShaderProgram.h"
 #include "Texture.h"
 #include "SpriteSheet.h"
 #include "FontRenderer.h"
+#include "Application.h"
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
@@ -34,10 +36,10 @@ static Window* current_window;
 static InputState input_state;
 
 static Camera camera;
-static mat4s view_times_proj = GLMS_MAT4_IDENTITY_INIT;
 
 static float joystick_angle = 0.0f;
-static ImVec2 joystick_size = {400.0f, 400.0f};
+static bool is_joystick_active = false;
+static ImVec2 joystick_box_size = {400.0f, 400.0f};
 static float joystick_radius = 70.0f;
 static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
 
@@ -85,8 +87,8 @@ static void init_player()
 
 	player->component_list.transform_component = (Component_Transform)
 	{
-		.position = {5.0f, 5.0f, 0.0f},
-		.scale = {1.0f, 1.0f, 0.0f},
+		.position = {0.0f, 0.0f, 0.1f},
+		.scale = {1.0f, 1.0f, 1.0f},
 		.speed = 4.0f,
 	};
 
@@ -95,7 +97,7 @@ static void init_player()
 	player_current_sprite_name = player_spritesheet->default_sprite;
 
 	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
-	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices));
+	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices), true);
 	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
 
@@ -168,18 +170,19 @@ void fill_map()
 			float x2 = (float)((x+1)*texture.width*map_tile_size.x);
 			float y2 = (float)((y+1)*texture.height*map_tile_size.y);
 
+			UV_Coords uv_coords;
+			Sprite* sprite = (Sprite*)hashmap_get(map_sprite_sheet->sprite_hashmap, &(Sprite){ .name=tile_sprite });
+			get_spriteUV(&uv_coords, map_sprite_sheet, sprite);
+
 			map_tiles[y * MAP_SIZE_X + x] = (Quad)
 			{
 				{
-					{{{x2, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{1.0f, 1.0f}}},
-					{{{x2, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{1.0f, 0.0f}}},
-					{{{x1, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{0.0f, 0.0f}}},
-					{{{x1, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{0.0f, 1.0f}}},
+					{{{x2, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{uv_coords.x2, uv_coords.y2}}},
+					{{{x2, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{uv_coords.x2, uv_coords.y1}}},
+					{{{x1, y1, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{uv_coords.x1, uv_coords.y1}}},
+					{{{x1, y2, 0.0f}}, {{1.0f, 0.0f, 0.0f, 1.0f}}, {{uv_coords.x1, uv_coords.y2}}},
 				}
 			};
-
-			Sprite* sprite = (Sprite*)hashmap_get(map_sprite_sheet->sprite_hashmap, &(Sprite){ .name=tile_sprite });
-			get_spriteUV(&map_tiles[y * MAP_SIZE_X + x], map_sprite_sheet, sprite);
 		}
 	}
 
@@ -216,10 +219,10 @@ void init_map()
 
 	fill_map();
 	init_shader_program(&map->component_list.sprite_component.shader_program, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
-	init_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, map_tiles, sizeof(map_tiles), map_indices, sizeof(map_indices));
+	init_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, map_tiles, sizeof(map_tiles), map_indices, sizeof(map_indices), true);
 }
 
-void draw_map(Camera* camera)
+void draw_map()
 {
 	bind_shader_program(&map->component_list.sprite_component.shader_program);
 
@@ -229,8 +232,8 @@ void draw_map(Camera* camera)
 	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
 	transform = glms_translate(transform, (vec3s){{0.0f, 0.0f, 0.0f}});
 
-	uniform_mat4(&map->component_list.sprite_component.shader_program, "projection", camera->projection_matrix);
-	uniform_mat4(&map->component_list.sprite_component.shader_program, "view", camera->view_matrix);
+	uniform_mat4(&map->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+	uniform_mat4(&map->component_list.sprite_component.shader_program, "view", camera.view_matrix);
 	uniform_mat4(&map->component_list.sprite_component.shader_program, "transform", transform);
 
 	bind_vertex_buffer(&map->component_list.sprite_component.vertex_attribs, VAO);
@@ -239,28 +242,34 @@ void draw_map(Camera* camera)
 }
 
 // Scene
-static void init(Window* window)
+static void init()
 {
-	current_window = window;
+	current_window = &game_engine.current_window;
 
 	init_player();
 	init_map();
 
-	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
-	camera.position = (vec3s){{5.0f, 5.0f, -10.0f}};
+	camera.position = (vec3s){{0.0f, 0.0f, 10.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
 	camera.up = (vec3s){{0.0f, 1.0f, 0.0f}};
 	camera.speed = 5.0f;
+	camera.front = (vec3s){{0.0f, 0.0f, -1.0f}};
+	camera.fov = glm_rad(45.0f);
+	camera.near_plane = 0.1f;
+	camera.far_plane = 1000.0f;
+	camera.mouse_sensitivity = 0.1f;
+	camera.pitch = 0.0f;
+	camera.yaw = -90.0f;
+	camera.camera_type = WALK_AROUND;
 	init_camera(&camera);
+
 	
 	imgui_io = ImGui_GetIO();
 }
 
-static void update(float deltatime)
+static void update()
 {
-	camera.window_dimensions = (vec2s){{ current_window->width, current_window->height }};
 	update_camera(&camera);
-	view_times_proj = glms_mat4_mulN((mat4s*[]){&camera.projection_matrix, &camera.view_matrix}, 2);
 
 	if(!input_state.keyPress)
 	{
@@ -269,40 +278,43 @@ static void update(float deltatime)
 
 	if(input_state.up)
 	{
-		player->component_list.transform_component.position.y += player->component_list.transform_component.speed * deltatime;
+		player->component_list.transform_component.position.y += player->component_list.transform_component.speed * game_engine.deltatime;
 		player_current_sprite_name = "move-up";
 	}
 	if(input_state.down)
 	{
-		player->component_list.transform_component.position.y-= player->component_list.transform_component.speed * deltatime;
+		player->component_list.transform_component.position.y -= player->component_list.transform_component.speed * game_engine.deltatime;
 		player_current_sprite_name = "move-down";
 	}
 	if(input_state.left)
 	{
-		player->component_list.transform_component.position.x += player->component_list.transform_component.speed * deltatime;
+		player->component_list.transform_component.position.x -= player->component_list.transform_component.speed * game_engine.deltatime;
 		player_current_sprite_name = "move-left";
 	}
 	if(input_state.right)
 	{
-		player->component_list.transform_component.position.x -= player->component_list.transform_component.speed * deltatime;
+		player->component_list.transform_component.position.x += player->component_list.transform_component.speed * game_engine.deltatime;
 		player_current_sprite_name = "move-right";
 	}
 
-//	moveCamera(&camera, input_state, deltatime);
+	move_camera(&camera, input_state, game_engine.deltatime);
 }
 
 static void render()
 {
-//	ImGui_ShowDemoWindow(NULL);	
+//	ImGui_ShowDemoWindow(NULL);
+//	ui_render_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 
-	draw_map(&camera);
+	draw_map();
 	draw_player();
 
-	render_text("Hello", 100.0f, 300.0f, 1.0f, (vec3s){1.0f, 1.0f, 1.0f});
+	render_text("Hello", 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
 }
 
-static void process_input(InputSystem input_system, float deltatime)
+static void process_input()
 {
+	InputSystem input_system = game_engine.current_window.input_system;
+
 	input_state.up = input_system.key_pressed_data[GLFW_KEY_UP] || input_system.key_pressed_data[GLFW_KEY_W];
 	input_state.down = input_system.key_pressed_data[GLFW_KEY_DOWN] || input_system.key_pressed_data[GLFW_KEY_S];
 	input_state.left = input_system.key_pressed_data[GLFW_KEY_LEFT] || input_system.key_pressed_data[GLFW_KEY_A];
@@ -310,48 +322,14 @@ static void process_input(InputSystem input_system, float deltatime)
 	input_state.space = input_system.key_pressed_data[GLFW_KEY_SPACE];
 	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
 
-	// Joystick	
-	ImVec2 joystick_center = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};
-
-	ImGui_Begin("Input", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	// Joystick
+	if(is_joystick_active)
 	{
-		static ImVec2 joystick_circle_pos;
-		ImGui_SetWindowSize(joystick_size, ImGuiCond_Always);
-		ImGui_SetWindowPos((ImVec2){50, ImGui_GetIO()->DisplaySize.y - joystick_size.y*1.2}, ImGuiCond_Always);
-		ImDrawList_AddCircleFilled(ImGui_GetWindowDrawList(), joystick_circle_pos, joystick_radius, ImGui_ColorConvertFloat4ToU32(joystick_color), 32);
-		ImGui_InvisibleButton("Joystick", (ImVec2){joystick_radius*4, joystick_radius*4}, ImGuiButtonFlags_MouseButtonLeft);
-		ImGui_SetCursorPos(joystick_circle_pos);
-		if(ImGui_IsItemActive() && ImGui_IsMouseDragging(0, -1.0f))
-		{
-			joystick_color = (ImVec4){0.0f, 225.0f, 225.0f, 225.0f};
-			joystick_circle_pos = imgui_io->MousePos;
-			vec2s mouse_drag_delta = (vec2s){ImGui_GetMouseDragDelta(0, -1.0f).x, ImGui_GetMouseDragDelta(0, -1.0f).y};
-
-			// Bad workaround
-			float dot_product_by_norm_x = glms_vec2_dot((vec2s){1.0f, 0.0f}, mouse_drag_delta)/glms_vec2_norm(mouse_drag_delta);
-			float dot_product_by_norm_y = glms_vec2_dot((vec2s){0.0f, -1.0f}, mouse_drag_delta)/glms_vec2_norm(mouse_drag_delta);
-			
-			if(dot_product_by_norm_y > 0.0f) // 1st or 2nd Quadrant
-			{
-				joystick_angle = glm_deg(acosf(dot_product_by_norm_x));
-			}
-			else // 3rd or 4th Quadrant
-			{
-				joystick_angle = glm_deg(2*M_PI - acosf(dot_product_by_norm_x));
-			}
-
-			if(joystick_angle >= 315.0f || joystick_angle <= 45.0f) input_state.right = true;
-			else if(joystick_angle >= 45.0f && joystick_angle <= 135.0f) input_state.up = true;
-			else if(joystick_angle >= 135.0f && joystick_angle <= 225.0f) input_state.left = true;
-			else if(joystick_angle >= 225.0f && joystick_angle <= 315.0f) input_state.down = true;
-		}
-		else
-		{
-			joystick_color = (ImVec4){225.0f, 225.0f, 225.0f, 225.0f};
-			joystick_circle_pos = (ImVec2){ImGui_GetWindowPos().x + joystick_size.x/2, ImGui_GetWindowPos().y + joystick_size.y/2};;
-		}
+		if(joystick_angle >= 315.0f || joystick_angle <= 45.0f) input_state.right = true;
+		else if(joystick_angle >= 45.0f && joystick_angle <= 135.0f) input_state.up = true;
+		else if(joystick_angle >= 135.0f && joystick_angle <= 225.0f) input_state.left = true;
+		else if(joystick_angle >= 225.0f && joystick_angle <= 315.0f) input_state.down = true;
 	}
-	ImGui_End();
 }
 
 static void activate()
@@ -366,10 +344,10 @@ static void destroy()
 {
 	destroy_texture(&map->component_list.sprite_component.texture);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
-	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs);
+	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
 	
 	destroy_texture(&player->component_list.sprite_component.texture);
-	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs);
+	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, true);
 	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }
 
