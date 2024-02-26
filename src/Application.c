@@ -39,8 +39,8 @@ static void init()
 	game_engine.current_window.width = WINDOW_WIDTH;
 	game_engine.current_window.height = WINDOW_HEIGHT;
 
-#if defined(_PLATFORM_DESKTOP)
-	chdir("./assets");
+#if !defined(_PLATFORM_ANDROID)
+	chdir(ASSETS_DIR);
 #endif
 
 	init_window(&game_engine.current_window);
@@ -57,7 +57,7 @@ static void init()
 	// Scene
 	add_scene(&ScenePlay);
 	add_scene(&SceneBlock);
-	change_scene("ScenePlay");
+	change_scene("SceneBlock");
 }
 
 static void render_frame()
@@ -105,7 +105,7 @@ void run_application()
 		render_frame();
 	}
 #else
-	emscripten_set_main_loop(renderFrame, 0, true);
+	emscripten_set_main_loop(render_frame, 0, true);
 #endif
 
 	cleanup();

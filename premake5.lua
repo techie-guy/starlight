@@ -9,8 +9,11 @@ workspace "mist-lib"
 
 	filter { "platforms:Desktop" }
 		toolset "clang"
+	filter {}
+
 	filter { "platforms:Web" }
 	    toolset "emcc"
+	filter {}
 
 	outputdir = "%{cfg.platform}-%{cfg.buildcfg}"
 
@@ -44,7 +47,7 @@ project "mist-lib"
 			"/usr/include/freetype2",
 			"/usr/include/libpng16"
 		}
-	filter{}
+	filter {}
 
 	filter { "platforms:Android" }
 		assets_dir = ""
@@ -73,8 +76,7 @@ project "mist-lib"
 		{
 			"-include src/android-fopen.h"
 		}
-
-	filter{}
+	filter {}
 
 	filter { "platforms:Web" }
 		assets_dir = "assets"
@@ -181,7 +183,7 @@ filter { "platforms:Android" }
 		{
 			"-u ANativeActivity_onCreate"
 		}
-		filter{}
+		filter {}
 
 	project "android_fopen"
 		kind "StaticLib"
@@ -215,8 +217,8 @@ filter { "platforms:Android" }
 			"android",
 			"glfw"
 		}
-		filter{}
-filter{}
+		filter {}
+filter {}
 
 
 project "glfw"
@@ -229,7 +231,7 @@ project "glfw"
 	includedirs
 	{
 		"third-party/glfw/include"
-	}	
+	}
 
 	filter { "system:linux or system:android" }
 		files
@@ -244,7 +246,6 @@ project "glfw"
 		}
 	filter {}
 
-	filter { "platforms:Desktop" }
 	filter { "system:linux" }
 		local session_type = os.getenv("XDG_SESSION_TYPE")
 
@@ -284,7 +285,6 @@ project "glfw"
 				"_GLFW_WAYLAND",
 			}
 		end
-	filter {}
 	filter {}
 
 	filter { "platforms:Android" }
@@ -337,6 +337,10 @@ project "glfw"
 		"third-party/glfw/src/null_window.c",
 		"third-party/glfw/src/null_joystick.c",
 	}
+
+	filter { "platforms:Web" }
+		removefiles { "third-party/glfw/src/**.c" }
+	filter {}
 
 project "cimgui"
 	kind "StaticLib"
