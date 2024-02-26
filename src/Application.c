@@ -3,11 +3,6 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "cimgui.h"
-#include "cimgui_impl_glfw.h"
-#include "cimgui_impl_opengl3.h"
-
-#define UTILS_DEF
 #include "Utils.h"
 #include "Window.h"
 #include "SpriteSheet.h"
@@ -15,6 +10,8 @@
 #include "ECS.h"
 #include "Scene.h"
 #include "ScenePlay.h"
+#include "SceneBlock.h"
+#include "UI-Imgui.h"
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
@@ -30,102 +27,72 @@
 
 #include <cglm/struct.h>
 
-Window window;
-
 // Delta Time
-float deltatime = 0.0f;
-float current_frame = 0.0f;
-float last_frame = 0.0f;
+static float current_frame = 0.0f;
+static float last_frame = 0.0f;
 
-void init()
+GameEngine game_engine = (GameEngine){};
+
+static void init()
 {
-	window.title = WINDOW_TITLE;
-	window.width = WINDOW_WIDTH;
-	window.height = WINDOW_HEIGHT;
+	game_engine.current_window.title = WINDOW_TITLE;
+	game_engine.current_window.width = WINDOW_WIDTH;
+	game_engine.current_window.height = WINDOW_HEIGHT;
 
 #if defined(_PLATFORM_DESKTOP)
 	chdir("./assets");
 #endif
 
-	init_window(&window);
-	change_window_color("#034694", 1.0f);
+	init_window(&game_engine.current_window);
+	change_window_color(hex_to_rbg("#333333", 1.0f));
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 
 	init_spritesheet();
-	init_font_renderer("fonts/font.ttf", 96, &window);
-
-	// Init ImGui
-	ImGui_CreateContext(NULL);
-    ImGuiIO* io = ImGui_GetIO();
-
-	io->IniFilename = "/data/data/io.github.techieguy.mistlib/files/imgui.ini";
-
-	ImVector_ImWchar ranges;
-	ImVector_Construct(&ranges);
-	ImFontGlyphRangesBuilder builder;
-	memset(&builder, 0, sizeof(builder));
-
-	ImFontGlyphRangesBuilder_Clear(&builder);
-	ImFontGlyphRangesBuilder_AddRanges(&builder, ImFontAtlas_GetGlyphRangesDefault(io->Fonts));
-	ImFontGlyphRangesBuilder_AddText(&builder, "", NULL);
-	ImFontGlyphRangesBuilder_BuildRanges(&builder, &ranges);
-	
-	ImFontAtlas_AddFontFromFileTTF(io->Fonts, "fonts/font.ttf", 20, NULL, ranges.Data);
-	ImFontAtlas_Build(io->Fonts);
-
-	ImVector_Destruct(&ranges);
-
-	cImGui_ImplGlfw_InitForOpenGL(window.handle, true);
-	cImGui_ImplOpenGL3_InitEx("#version 100");
+	init_font_renderer("fonts/font.ttf", 96);
+	init_imgui("fonts/font.ttf", 20, "", "#version 100");
 
 	// Scene
 	add_scene(&ScenePlay);
+	add_scene(&SceneBlock);
 	change_scene("ScenePlay");
-	init_scene(&window);
 }
 
-void render_frame()
+static void render_frame()
 {
 	{
 		current_frame = glfwGetTime();
-		deltatime = current_frame - last_frame;
+		game_engine.deltatime = current_frame - last_frame;
 		last_frame = current_frame;
 	}
 
 	window_poll_events();
 
-	update_scene(deltatime);
+	update_scene();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	cImGui_ImplOpenGL3_NewFrame();
-	cImGui_ImplGlfw_NewFrame();
-	ImGui_NewFrame();
-
-	scene_process_input(window.input_system, deltatime);
+	new_imgui_frame();
+	
+	scene_process_input();
 	render_scene();
 
-	ImGui_Render();
-
-	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
-
-	window_swap_buffers(&window);
+	render_imgui();
+	
+	window_swap_buffers(&game_engine.current_window);
 }
 
-void cleanup()
+static void cleanup()
 {
 	destroy_ECS();
 	destroy_scenes();
 
 	destroy_spriteSheet();
-
-	cImGui_ImplOpenGL3_Shutdown();
-	cImGui_ImplGlfw_Shutdown();
-	ImGui_DestroyContext(NULL);
-
-	destroy_window(&window);
+	
+	destroy_imgui();
+	destroy_window(&game_engine.current_window);
 }
 
 void run_application()
@@ -133,7 +100,7 @@ void run_application()
 	init();
 	
 #if !defined(_PLATFORM_WEB)
-	while(!should_window_close(&window))
+	while(!should_window_close(&game_engine.current_window))
 	{
 		render_frame();
 	}
