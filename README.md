@@ -1,6 +1,6 @@
 # mist-lib
 
-Loosely packed Game "Library" written in C
+Loosely packed Game "Sandbox" written in C
 
 Font used: [Monocraft](https://github.com/IdreesInc/Monocraft)
 
@@ -18,7 +18,11 @@ Clone this repository recursively to pull in the submodules
 
 You can Download them from your package manager
 
-After cloning the repo recursively, `cd` into it. Then use `premake5 gmake2` to generate the project build files.
+After cloning the repo recursively, `cd` into it.
+
+Then, use `sh generate-source-files.sh` to generate some source files
+
+Use `premake5 gmake2` to generate the project build files.
 
 Use `make help` to get a list of the available configurations.
 
