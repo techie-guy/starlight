@@ -1,4 +1,5 @@
 #include "FontRenderer.h"
+#include "Application.h"
 #include "ShaderProgram.h"
 #include "VertexAttributes.h"
 #include "Texture.h"
@@ -45,12 +46,12 @@ static GLushort indices[6] =
 
 mat4s projection = GLMS_MAT4_IDENTITY_INIT;
 
-void init_font_renderer(const char* font_path, int character_size, Window* window)
+void init_font_renderer(const char* font_path, int character_size)
 {
-	current_window = window;
+	current_window = &game_engine.current_window;
 
 	init_shader_program(&shader_program, FONT_VERTEX_SHADER_PATH, FONT_FRAGMENT_SHADER_PATH);
-	init_vertex_attributes(&vertex_attributes, NULL, sizeof(Quad), indices, sizeof(indices));
+	init_vertex_attributes(&vertex_attributes, NULL, sizeof(Quad), indices, sizeof(indices), true);
 
 	//  Loading the .ttf file
 	buffer = (unsigned char*)read_file(font_path, "rb");
@@ -93,12 +94,12 @@ void init_font_renderer(const char* font_path, int character_size, Window* windo
 
 // BUG: Blurry text if scale is not 1.0
 // BUG: Text not aligned properly
-void render_text(char* text, float x, float y, float scale, vec3s color)
+void render_text(char* text, float x, float y, float scale, char* hex_color, float opacity)
 {
 	bind_shader_program(&shader_program);
 	projection = glms_ortho(0, current_window->width, 0, current_window->height, -1.0f, 1.0f);
 	uniform_mat4(&shader_program, "projection", projection);
-	uniform_vec3(&shader_program, "text_color", color);
+	uniform_vec4(&shader_program, "text_color", hex_to_rbg(hex_color, opacity));
 
 	bind_vertex_buffer(&vertex_attributes, VAO);
 
