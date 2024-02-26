@@ -10,7 +10,7 @@
 	#include <GLES3/gl3.h>
 #endif
 
-void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t vertex_data_size, void* index_data, size_t index_data_size)
+void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t vertex_data_size, void* index_data, size_t index_data_size, bool indexed)
 {
 	glGenVertexArrays(1, &attrib->VAO);
 	bind_vertex_buffer(attrib, VAO);
@@ -28,9 +28,12 @@ void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coord));
 	glEnableVertexAttribArray(2);
 
-	glGenBuffers(1, &attrib->EBO);
-	bind_vertex_buffer(attrib, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data_size, index_data, GL_STATIC_DRAW);
+	if(indexed)
+	{
+		glGenBuffers(1, &attrib->EBO);
+		bind_vertex_buffer(attrib, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data_size, index_data, GL_STATIC_DRAW);
+	}
 }
 
 void bind_vertex_buffer(VertexAttributes* attrib, enum Buffers buffer)
@@ -59,9 +62,13 @@ void unbind_vertex_buffer(VertexAttributes* attrib, enum Buffers buffer)
 	}
 }
 
-void destroy_vertex_attributes(VertexAttributes* attrib)
+void destroy_vertex_attributes(VertexAttributes* attrib, bool indexed)
 {
 	glDeleteVertexArrays(1, &attrib->VAO);
 	glDeleteBuffers(1, &attrib->VBO);
-	glDeleteBuffers(1, &attrib->EBO);
+
+	if(indexed)
+	{
+		glDeleteBuffers(1, &attrib->EBO);
+	}
 }
