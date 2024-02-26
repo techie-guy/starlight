@@ -40,7 +40,7 @@ void check_for_errors(unsigned int id, int status)
 	}
 }
 
-void compileShader(unsigned int* shader, const int shader_type, const char** shader_source)
+void compile_shader(unsigned int* shader, const int shader_type, const char** shader_source)
 {
 	*shader = glCreateShader(shader_type);
 	glShaderSource(*shader, 1, shader_source, NULL);
@@ -55,10 +55,10 @@ void init_shader_program(unsigned int* shader_program, const char* vertex_shader
 	char* fragment_shader_source = read_file(fragment_shader_source_path, "r");
 
 	unsigned int vertex_shader;
-	compileShader(&vertex_shader, GL_VERTEX_SHADER, (const char**)&vertex_shader_source);
+	compile_shader(&vertex_shader, GL_VERTEX_SHADER, (const char**)&vertex_shader_source);
 
 	unsigned int fragment_shader;
-	compileShader(&fragment_shader, GL_FRAGMENT_SHADER, (const char**)&fragment_shader_source);
+	compile_shader(&fragment_shader, GL_FRAGMENT_SHADER, (const char**)&fragment_shader_source);
 
 	*shader_program = glCreateProgram();
 	glAttachShader(*shader_program, vertex_shader);
