@@ -1,55 +1,52 @@
 #include "Scene.h"
+#include "Application.h"
 
 #include <stb_ds.h>
 
 static struct { char* key; Scene* value; }* scenes = NULL;
 
-static Scene* current_scene;
 static unsigned int total_scenes;
 
 void add_scene(Scene* scene)
 {
 	shput(scenes, scene->scene_name, scene);
 	total_scenes++;
+
+	scene->init();
 }
 
 void change_scene(char* scene_name)
 {
 	Scene* s = shget(scenes, scene_name);
 
-	if(current_scene)
+	if(game_engine.current_scene)
 	{
-		current_scene->deactivate();
+		game_engine.current_scene->deactivate();
 	}
 
-	current_scene = s;
+	game_engine.current_scene = s;
 
-	current_scene->activate();
+	game_engine.current_scene->activate();
 }
 
-void init_scene(Window* window)
+void update_scene()
 {
-	current_scene->init(window);
-}
-
-void update_scene(float deltatime)
-{
-	current_scene->update(deltatime);
+	game_engine.current_scene->update();
 }
 
 void render_scene()
 {
-	current_scene->render();
+	game_engine.current_scene->render();
 }
 
-void scene_process_input(InputSystem input_system, float deltatime)
+void scene_process_input()
 {
-	current_scene->process_input(input_system, deltatime);
+	game_engine.current_scene->process_input();
 }
 
 void destroy_scene()
 {
-	current_scene->destroy();
+	game_engine.current_scene->destroy();
 }
 
 void destroy_scenes()

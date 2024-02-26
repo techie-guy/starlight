@@ -6,21 +6,20 @@
 typedef struct
 {
 	char* scene_name;
-	void (*init)(Window*);
+	void (*init)();
 	void (*destroy)();
 	void (*activate)();
 	void (*deactivate)();
-	void (*update)(float);
+	void (*update)();
 	void (*render)();
-	void (*process_input)(InputSystem, float);
+	void (*process_input)();
 } Scene;
 
 void add_scene(Scene* scene);
 void change_scene(char* scene_name);
 
-void init_scene();
-void update_scene(float deltatime);
+void update_scene();
 void render_scene();
-void scene_process_input(InputSystem input_system, float deltatime);
+void scene_process_input();
 void destroy_scene();
 void destroy_scenes();
