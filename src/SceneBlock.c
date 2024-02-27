@@ -170,15 +170,15 @@ static void generate_map()
 
 				float noise_x = (float)x/(float)BLOCKS_X;
 				float noise_y = (float)y/(float)BLOCKS_Y;
-				float noise_z = (float)y/(float)BLOCKS_Z;
+				float noise_z = (float)z/(float)BLOCKS_Z;
 				float noise_factor = 1.0f;
 				static char* block_sprite = "grass";
 
-				float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, noise_z * noise_factor, 4, 16, 4, seed);
+				float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, noise_z * noise_factor, 0, 0, 0, seed);
 //				log_debug("Perlin Noise: %f\n", perlin_noise);
 
 				if(perlin_noise > 0.2f) block_sprite = "grass";
-				if(perlin_noise > 0.0f && perlin_noise < 0.2f) block_sprite = "water";
+				if(perlin_noise >= 0.0f && perlin_noise <= 0.2f) block_sprite = "water";
 				if(perlin_noise < 0.0f) block_sprite = "stone";
 
 				add_block(current_block_origin, HALF_BLOCK_SIZE, block_sprite);

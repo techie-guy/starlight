@@ -24,7 +24,6 @@ typedef struct
 {
 	Texture texture;
 	vec2s size;
-	vec2s offset;
 	unsigned int advance;
 } Character;
 
@@ -64,8 +63,8 @@ void init_font_renderer(const char* font_path, int character_size)
 	for (unsigned char c = 0; c < 128; c++)
 	{
 		int glyph_index = stbtt_FindGlyphIndex(&font, c);
-		int width, height, x_offset, y_offset;
-		unsigned char* bitmap = stbtt_GetGlyphBitmap(&font, 0, scale, glyph_index, &width, &height, &x_offset, &y_offset);
+		int width, height;
+		unsigned char* bitmap = stbtt_GetGlyphBitmap(&font, 0, scale, glyph_index, &width, &height, NULL, NULL);
 
 		// generate texture
 		Texture texture;
@@ -84,7 +83,6 @@ void init_font_renderer(const char* font_path, int character_size)
 		{
     	    texture, 
 			(vec2s){width, height},
-			(vec2s){x_offset, y_offset},
     	    stbtt_GetGlyphKernAdvance(&font, glyph_index, stbtt_FindGlyphIndex(&font, c+1))
     	};
 		hmput(characters, c, character);
@@ -107,9 +105,6 @@ void render_text(char* text, float x, float y, float scale, char* hex_color, flo
 	{
 		Character ch = hmget(characters, *c);
 
-		float xpos = x + ch.offset.x;
-        float ypos = y + ch.offset.y;
-
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
 
@@ -128,10 +123,10 @@ void render_text(char* text, float x, float y, float scale, char* hex_color, flo
 			(Quad)
 			{
 				{
-				{{xpos, ypos + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-				{{xpos, ypos, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-				{{xpos + w, ypos, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-				{{xpos + w, ypos + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}
+				{{x, y + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+				{{x, y, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+				{{x + w, y, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+				{{x + w, y + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}
 				}
 			}
 		};
