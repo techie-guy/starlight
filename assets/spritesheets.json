@@ -7,7 +7,7 @@
 		"type": 0,
 		"width": 192,
 		"height": 64,
-		"sprites": [	
+		"sprites": [
 			{
 				"name": "idle",
 				"x": 0,

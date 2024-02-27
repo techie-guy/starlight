@@ -57,7 +57,7 @@ static void init()
 	// Scene
 	add_scene(&ScenePlay);
 	add_scene(&SceneBlock);
-	change_scene("SceneBlock");
+	change_scene("ScenePlay");
 }
 
 static void render_frame()
