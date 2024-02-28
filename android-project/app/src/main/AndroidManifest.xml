@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="io.github.techieguy.mistlib">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="io.github.techieguy.starlight">
 	<uses-feature android:glEsVersion="0x00030000"/>
 
 	<!-- This .apk has no Java code itself, so set hasCode to false. -->
@@ -19,7 +19,7 @@
 			android:exported="true">
 			<!-- Tell NativeActivity the name of our .so -->
 			<meta-data android:name="android.app.lib_name"
-			  android:value="mist-lib" />
+			  android:value="starlight" />
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

@@ -1,4 +1,4 @@
-# mist-lib
+# starlight
 
 Loosely packed Game "Sandbox" written in C
 
@@ -28,7 +28,7 @@ Use `make help` to get a list of the available configurations.
 
 Use `make config=CONFIG` to build the project for the required Platform.
 
-The executable is in `bin/CONFIG/mist-lib/mist-lib`,
+The executable is in `bin/CONFIG/starlight/starlight`,
 
 ## Android Support
 ### Using Gradle
@@ -39,4 +39,4 @@ Then `cd` into `android-project` and use `gradle build`
 ### Build it directly (Doesn't work!)
 Use `premake5 androidndk` to generate the build files
 
-Then, use `ndk-build NDK_PROJECT_PATH=./ APP_BUILD_SCRIPT=mist-lib.wks.Android.mk PREMAKE_ANDROIDNDK_CONFIGURATIONS=Debug PREMAKE_ANDROIDNDK_PLATFORMS:=Android APP_PLATFORM=android-30` to build the .so file
+Then, use `ndk-build NDK_PROJECT_PATH=./ APP_BUILD_SCRIPT=starlight.wks.Android.mk PREMAKE_ANDROIDNDK_CONFIGURATIONS=Debug PREMAKE_ANDROIDNDK_PLATFORMS:=Android APP_PLATFORM=android-30` to build the .so file
