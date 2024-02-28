@@ -1,8 +1,8 @@
 require("third-party/premake5-emcc/emscripten")
 require("third-party/premake-androidndk/androidndk")
 
-workspace "mist-lib"
-	startproject "mist-lib"
+workspace "starlight"
+	startproject "starlight"
 
 	configurations { "Debug", "Release" }
 	platforms { "Desktop", "Web", "Android" }
@@ -19,10 +19,10 @@ workspace "mist-lib"
 
 	window_width = 1280
 	window_height = 720
-	window_title = "Mist Lib"
+	window_title = "Starlight"
 	assets_dir = "assets"
 
-project "mist-lib"	
+project "starlight"
 	kind "ConsoleApp"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"

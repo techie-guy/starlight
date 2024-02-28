@@ -7,7 +7,7 @@ android {
     ndkVersion '25.1.8937393'	
 
     defaultConfig {	
-        applicationId = 'io.github.techieguy.mistlib'
+        applicationId = 'io.github.techieguy.starlight'
         minSdkVersion 30
         targetSdkVersion 30
 		externalNativeBuild {
@@ -49,11 +49,11 @@ android {
 	}
 	externalNativeBuild {
         ndkBuild {
-            path file('../../mist-lib.wks.Android.mk')
+            path file('../../starlight.wks.Android.mk')
         }
     }
     lintOptions {
 		abortOnError false
     }
-	namespace 'io.github.techieguy.mistlib'
+	namespace 'io.github.techieguy.starlight'
 }

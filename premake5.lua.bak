@@ -1,7 +1,7 @@
 require("third-party/premake5-emcc/emscripten")
 
-workspace "mist-lib"
-	startproject "mist-lib"
+workspace "starlight"
+	startproject "starlight"
 
 	configurations { "Debug", "Release" }
 	platforms { "Desktop", "Web", "Android" }
@@ -18,7 +18,7 @@ workspace "mist-lib"
 	window_title = "Mist Lib"
 	assets_dir = "assets"
 
-project "mist-lib"	
+project "starlight"
 	kind "ConsoleApp"
 	language "C"
 	targetdir "bin/%{outputdir}/%{prj.name}"
