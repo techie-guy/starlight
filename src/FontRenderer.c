@@ -91,7 +91,6 @@ void init_font_renderer(const char* font_path, int character_size)
 }
 
 // BUG: Blurry text if scale is not 1.0
-// BUG: Text not aligned properly
 void render_text(char* text, float x, float y, float scale, char* hex_color, float opacity)
 {
 	bind_shader_program(&shader_program);
