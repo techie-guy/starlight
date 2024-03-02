@@ -22,6 +22,7 @@
 typedef struct
 {
 	vec3s position;
+	bool is_transparent;
 	Vertex* vertex_data;
 } Block;
 
@@ -46,10 +47,11 @@ static Entity* block;
 static InputState input_state;
 
 //static void add_block(vec3s origin, float block_size, char* sprite_name, Vertex** vertex_data)
-static void add_block(vec3s origin, float block_size, char* sprite_name)
+static void add_block(vec3s origin, float block_size, char* sprite_name, bool is_transparent)
 {
 	Block block = {};
 	block.position = origin;
+	block.is_transparent = is_transparent;
 
 	vec3s cube_vertices_positions[8] =
 	{
@@ -90,11 +92,21 @@ static void add_block(vec3s origin, float block_size, char* sprite_name)
 	for(int i = 0; i < sizeof(cube_indices)/sizeof(cube_indices[0]); i++)
 	{
 		Vertex vertex;
-		vertex.position = glms_vec3_add(cube_vertices_positions[cube_indices[i]], origin);
-		vertex.tex_coord = tex_coords[i % 6];
 
-//		arrput(*vertex_data, vertex);
-		arrput(block.vertex_data, vertex);
+		if(block.is_transparent)
+		{
+			vertex = (Vertex){};
+			arrput(block.vertex_data, vertex);
+			continue;
+		}
+		else
+		{
+			vertex.position = glms_vec3_add(cube_vertices_positions[cube_indices[i]], origin);
+			vertex.tex_coord = tex_coords[i % 6];
+
+			//arrput(*vertex_data, vertex);
+			arrput(block.vertex_data, vertex);
+		}
 	}
 
 	arrput(blocks, block);
@@ -105,6 +117,11 @@ static void cull_faces(Block* block, float offset)
 	// Linear Seach ;)
 	for(int i = 0; i < arrlen(blocks); i++)
 	{
+		if(block->is_transparent || blocks[i].is_transparent)
+		{
+			continue;
+		}
+
 		if(glms_vec3_eqv((vec3s){block->position.x-offset, block->position.y, block->position.z}, blocks[i].position)) // left
 		{
 			for(int j = 0; j < 6; j++)
@@ -172,19 +189,39 @@ static void generate_map()
 				float noise_y = (float)y/(float)BLOCKS_Y;
 				float noise_z = (float)z/(float)BLOCKS_Z;
 				float noise_factor = 1.0f;
+
 				static char* block_sprite = "grass";
+				static bool block_is_transparent = false;
 
 				float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, noise_z * noise_factor, 0, 0, 0, seed);
-//				log_debug("Perlin Noise: %f\n", perlin_noise);
+				log_debug("Perlin Noise: %f\n", perlin_noise);
 
-				if(perlin_noise > 0.2f) block_sprite = "grass";
-				if(perlin_noise >= 0.0f && perlin_noise <= 0.2f) block_sprite = "water";
-				if(perlin_noise < 0.0f) block_sprite = "stone";
+				if(perlin_noise >= 0.2f)
+				{
+					block_sprite = "grass";
+					block_is_transparent = true;
+				}
+				else if(perlin_noise >= 0.1f)
+				{
+					block_sprite = "grass";
+					block_is_transparent = false;
+				}	
+				else if(perlin_noise >= 0.0f && perlin_noise <= 0.1f)
+				{
+					block_sprite = "water";
+					block_is_transparent = false;
+				}
+				else if(perlin_noise < 0.0f)
+				{
+					block_sprite = "stone";
+					block_is_transparent = false;
+				}
 
-				add_block(current_block_origin, HALF_BLOCK_SIZE, block_sprite);
+				add_block(current_block_origin, HALF_BLOCK_SIZE, block_sprite, block_is_transparent);
 			}
 		}
 	}
+
 
 	for(int i = 0; i < arrlen(blocks); i++)
 	{
@@ -244,6 +281,15 @@ static void process_input()
 	input_state.right = input_system.key_pressed_data[GLFW_KEY_RIGHT] || input_system.key_pressed_data[GLFW_KEY_D];
 	input_state.space = input_system.key_pressed_data[GLFW_KEY_SPACE];
 	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
+
+	// Joystick
+	if(is_joystick_active)
+	{
+		if(joystick_angle >= 315.0f || joystick_angle <= 45.0f) input_state.right = true;
+		else if(joystick_angle >= 45.0f && joystick_angle <= 135.0f) input_state.up = true;
+		else if(joystick_angle >= 135.0f && joystick_angle <= 225.0f) input_state.left = true;
+		else if(joystick_angle >= 225.0f && joystick_angle <= 315.0f) input_state.down = true;
+	}
 
 	move_camera(&camera, input_state, game_engine.deltatime);
 }
