@@ -1,7 +1,8 @@
 #include "SpriteSheet.h"
 #include "Utils.h"
+#include "JsonHelper.h"
+
 #include <string.h>
-#include <cJSON.h>
 #include <hashmap.h>
 
 struct hashmap* sprite_sheet_hashmap;
@@ -37,35 +38,35 @@ void init_spritesheet()
 	sprite_sheet_hashmap = hashmap_new(sizeof(SpriteSheet), 0, 0, 0, sprite_sheet_hash, sprite_sheet_compare, NULL, NULL);
 
 	char* texture_json_string = read_file("spritesheets.json", "r");
-	cJSON* texture_json = cJSON_Parse(texture_json_string);
+	cJSON* texture_json = json_parse(texture_json_string);
 
-	cJSON* spritesheets_json = cJSON_GetObjectItemCaseSensitive(texture_json, "spritesheets");
+	cJSON* spritesheets_json = json_get_object(texture_json, "spritesheets");
 
 	cJSON* spriteSheet_json;
 	cJSON_ArrayForEach(spriteSheet_json, spritesheets_json)
 	{
-		char* sheet_name = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "name")->valuestring);
-		char* sheet_path = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "path")->valuestring);
-		char* sheet_default_sprite = strdup(cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "default_sprite")->valuestring);
-		int sheet_width = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "width")->valueint;
-		int sheet_height = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "height")->valueint;
-		int sheet_type = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "type")->valueint;
+		char* sheet_name = strdup(json_get_string(spriteSheet_json, "name"));
+		char* sheet_path = strdup(json_get_string(spriteSheet_json, "path"));
+		char* sheet_default_sprite = strdup(json_get_string(spriteSheet_json, "default_sprite"));
+		int sheet_width = json_get_int(spriteSheet_json, "width");
+		int sheet_height = json_get_int(spriteSheet_json, "height");
+		int sheet_type = json_get_int(spriteSheet_json, "type");
 
 		struct hashmap* sprite_hashmap = hashmap_new(sizeof(Sprite), 0, 0, 0, sprite_hash, sprite_compare, NULL, NULL);
 
-		cJSON* sprites_json = cJSON_GetObjectItemCaseSensitive(spriteSheet_json, "sprites");
+		cJSON* sprites_json = json_get_object(spriteSheet_json, "sprites");
 
 		cJSON* sprite_json;
 
 		cJSON_ArrayForEach(sprite_json, sprites_json)
 		{
-			char* sprite_name = strdup(cJSON_GetObjectItemCaseSensitive(sprite_json, "name")->valuestring);
-			int sprite_x = cJSON_GetObjectItemCaseSensitive(sprite_json, "x")->valueint;
-			int sprite_y = cJSON_GetObjectItemCaseSensitive(sprite_json, "y")->valueint;
-			int sprite_frame_speed = cJSON_GetObjectItemCaseSensitive(sprite_json, "frame_speed")->valueint;
-			int sprite_count = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_count")->valueint;
-			int sprite_width = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_width")->valueint;
-			int sprite_height = cJSON_GetObjectItemCaseSensitive(sprite_json, "sprite_height")->valueint;
+			char* sprite_name = strdup(json_get_string(sprite_json, "name"));
+			int sprite_x = json_get_int(sprite_json, "x");
+			int sprite_y = json_get_int(sprite_json, "y");
+			int sprite_frame_speed = json_get_int(sprite_json, "frame_speed");
+			int sprite_count = json_get_int(sprite_json, "sprite_count");
+			int sprite_width = json_get_int(sprite_json, "sprite_width");
+			int sprite_height = json_get_int(sprite_json, "sprite_height");
 
 			hashmap_set(sprite_hashmap, &(Sprite){
 				.name=sprite_name,
@@ -86,7 +87,7 @@ void init_spritesheet()
 		});
 	}
 
-	cJSON_Delete(texture_json);
+	json_delete_object(texture_json);
 	free(texture_json_string);
 }
 

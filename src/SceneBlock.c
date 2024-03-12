@@ -169,9 +169,9 @@ static void cull_faces(Block* block, float offset)
 
 static void generate_map()
 {
-	int BLOCKS_X = 10;
-	int BLOCKS_Y = 10;
-	int BLOCKS_Z = 10;
+	int BLOCKS_X = 16;
+	int BLOCKS_Y = 8;
+	int BLOCKS_Z = 16;
 	float HALF_BLOCK_SIZE = 1.0f;
 
 	srand(time(NULL));
