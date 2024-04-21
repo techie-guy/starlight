@@ -1,5 +1,6 @@
 bin
 compile_commands.json
+vertex_data.json
 .cache
 *.session
 *.make
