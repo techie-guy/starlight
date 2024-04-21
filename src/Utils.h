@@ -61,4 +61,5 @@ typedef struct
 
 // Functions
 char* read_file(const char* filepath, const char* mode);
+void write_to_file(const char* filepath, char* data);
 vec4s hex_to_rbg(char colorcode[7], float alpha);

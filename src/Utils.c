@@ -35,6 +35,16 @@ char* read_file(const char* filepath, const char* mode)
 	return buffer;
 }
 
+void write_to_file(const char* filepath, char* data)
+{
+	FILE* file = fopen(filepath, "w+");
+	if(file)
+	{
+		fprintf(file, "%s", data);
+		fclose(file);
+	}
+}
+
 vec4s hex_to_rbg(char colorcode[7], float alpha)
 {
 	char hex_string[9] = {};
