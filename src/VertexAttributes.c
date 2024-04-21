@@ -32,7 +32,7 @@ void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t 
 	{
 		glGenBuffers(1, &attrib->EBO);
 		bind_vertex_buffer(attrib, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data_size, index_data, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data_size, index_data, GL_DYNAMIC_DRAW);
 	}
 }
 
