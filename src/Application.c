@@ -11,6 +11,7 @@
 #include "Scene.h"
 #include "ScenePlay.h"
 #include "SceneBlock.h"
+#include "SceneMenu.h"
 #include "UI-Imgui.h"
 
 #if defined(_PLATFORM_DESKTOP)
@@ -53,11 +54,13 @@ static void init()
 	init_spritesheet();
 	init_font_renderer("fonts/font.ttf", 96);
 	init_imgui("fonts/font.ttf", 20, "", "#version 100");
+//	ImGui_GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	// Scene
 	add_scene(&ScenePlay);
 	add_scene(&SceneBlock);
-	change_scene("SceneBlock");
+	add_scene(&SceneMenu);
+	change_scene("SceneMenu");
 }
 
 static void render_frame()
