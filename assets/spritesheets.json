@@ -139,6 +139,25 @@
 		]
 	},
 	{
+		"name": "pingus",
+		"path": "textures/pingus.png",
+		"default_sprite": "run",
+		"type": 0,
+		"width": 128,
+		"height": 32,
+		"sprites": [
+			{
+				"name": "run",
+				"x": 0,
+				"y": 0,
+				"frame_speed": 10,
+				"sprite_count": 4,
+				"sprite_width": 32,
+				"sprite_height": 32
+			}
+		]	
+	},
+	{
 		"name": "skeleton",
 		"path": "textures/skeleton.png",
 		"default_sprite": "move-down",

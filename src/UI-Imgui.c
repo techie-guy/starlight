@@ -4,9 +4,13 @@
 #include "cimgui.h"
 #include "cimgui_impl_glfw.h"
 #include "cimgui_impl_opengl3.h"
+
 #include <string.h>
 
+#include <stb_ds.h>
+
 static ImGuiIO* imgui_io;
+static struct { char* key; ImFont* value; }* fonts = NULL;
 
 void init_imgui(const char* font_path, int font_size, const char* chars_add, const char* glsl_version)
 {
@@ -25,13 +29,21 @@ void init_imgui(const char* font_path, int font_size, const char* chars_add, con
 	ImFontGlyphRangesBuilder_AddText(&builder, chars_add, NULL);
 	ImFontGlyphRangesBuilder_BuildRanges(&builder, &ranges);
 	
-	ImFontAtlas_AddFontFromFileTTF(imgui_io->Fonts, font_path, font_size, NULL, ranges.Data);
+	shput(fonts, "Normal", ImFontAtlas_AddFontFromFileTTF(imgui_io->Fonts, font_path, font_size, NULL, ranges.Data));
+	shput(fonts, "Double", ImFontAtlas_AddFontFromFileTTF(imgui_io->Fonts, font_path, font_size * 2.0f, NULL, ranges.Data));
+	shput(fonts, "Triple", ImFontAtlas_AddFontFromFileTTF(imgui_io->Fonts, font_path, font_size * 3.0f, NULL, ranges.Data));
+
 	ImFontAtlas_Build(imgui_io->Fonts);
 
 	ImVector_Destruct(&ranges);
 
 	cImGui_ImplGlfw_InitForOpenGL(game_engine.current_window.handle, true);
 	cImGui_ImplOpenGL3_InitEx(glsl_version);
+}
+
+ImFont* ui_get_font(const char* name)
+{
+	return shget(fonts, name);
 }
 
 void new_imgui_frame()
@@ -47,15 +59,16 @@ void render_imgui()
 	cImGui_ImplOpenGL3_RenderDrawData(ImGui_GetDrawData());
 }
 
-void ui_render_joystick(const char* joystick_box_tag, const char* joystick_circle_tag, ImVec2 joystick_box_size, float joystick_radius, ImVec4 joystick_color, float* joystick_angle, bool* is_joystick_active)
+void ui_component_joystick(const char* joystick_box_tag, const char* joystick_circle_tag, ImVec2 joystick_box_size, float joystick_radius, ImVec4 joystick_color, float* joystick_angle, bool* is_joystick_active)
 {
 	ImVec2 joystick_center = (ImVec2){ImGui_GetWindowPos().x + joystick_box_size.x/2, ImGui_GetWindowPos().y + joystick_box_size.y/2};
 
-	ImGui_Begin(joystick_box_tag, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui_Begin(joystick_box_tag, NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
 	{
 		static ImVec2 joystick_circle_pos;
 		ImGui_SetWindowSize(joystick_box_size, ImGuiCond_Always);
 		ImGui_SetWindowPos((ImVec2){50, ImGui_GetIO()->DisplaySize.y - joystick_box_size.y*1.2}, ImGuiCond_Always);
+
 		ImDrawList_AddCircleFilled(ImGui_GetWindowDrawList(), joystick_circle_pos, joystick_radius, ImGui_ColorConvertFloat4ToU32(joystick_color), 32);
 		ImGui_InvisibleButton(joystick_circle_tag, (ImVec2){joystick_radius*4, joystick_radius*4}, ImGuiButtonFlags_MouseButtonLeft);
 		ImGui_SetCursorPos(joystick_circle_pos);

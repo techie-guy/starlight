@@ -8,6 +8,7 @@ typedef struct
 	Window current_window;
 	Scene* current_scene;
 	float deltatime;
+	struct { char* key; Scene* value; }* scenes;
 } GameEngine;
 
 extern GameEngine game_engine;

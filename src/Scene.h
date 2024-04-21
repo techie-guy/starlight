@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Utils.h"
-#include "Window.h"
 
 typedef struct
 {
 	char* scene_name;
+
 	void (*init)();
 	void (*destroy)();
 	void (*activate)();
