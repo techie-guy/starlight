@@ -17,7 +17,10 @@
 #include <cglm/struct.h>
 #include <stb_ds.h>
 #include <stb_perlin.h>
+#include "JsonHelper.h"
+#include "cJSON.h"
 
+static vec4s background_color = (vec4s){0.0f, 0.0f, 0.0f, 1.0f};
 
 typedef struct
 {
@@ -38,7 +41,7 @@ static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
 static Window* current_window;
 static Camera camera;
 
-static Vertex* vertex_render_data;
+static Vertex* vertex_render_data = NULL;
 //static vec3s* block_positions;
 
 static SpriteSheet* block_sprite_sheet;
@@ -102,6 +105,7 @@ static void add_block(vec3s origin, float block_size, char* sprite_name, bool is
 		else
 		{
 			vertex.position = glms_vec3_add(cube_vertices_positions[cube_indices[i]], origin);
+			vertex.color = (vec4s){0.0f, 0.0f, 0.0f, 0.0f};
 			vertex.tex_coord = tex_coords[i % 6];
 
 			//arrput(*vertex_data, vertex);
@@ -167,6 +171,81 @@ static void cull_faces(Block* block, float offset)
 	}
 }
 
+static void save_terrain()
+{
+	cJSON *root, *vertex_data_json;
+
+	root = json_create_object();
+	vertex_data_json = json_create_array();
+
+	json_add_item_to_object(root, "vertex_data", vertex_data_json);
+
+	for(int i = 0; i < arrlen(blocks); i++)
+	{
+		for(int j = 0; j < arrlen(blocks[i].vertex_data); j++)
+		{
+			cJSON* vertex_json = json_create_object();
+
+			json_add_item_to_object(vertex_json, "position", json_create_float_array(blocks[i].vertex_data[j].position.raw, 3));
+			json_add_item_to_object(vertex_json, "color", json_create_float_array(blocks[i].vertex_data[j].color.raw, 4));
+			json_add_item_to_object(vertex_json, "tex_coord", json_create_float_array(blocks[i].vertex_data[j].tex_coord.raw, 2));
+
+			json_add_item_to_array(vertex_data_json, vertex_json);
+		}
+	}
+
+	char* vertex_data_string = json_print(root);
+
+	write_to_file("../vertex_data.json", vertex_data_string);
+
+	free(vertex_data_string);
+
+	json_delete_object(root);
+}
+
+void load_terrain(char* filepath)
+{
+	char* terrain_json_string = read_file(filepath, "r");
+
+	cJSON* root = json_parse(terrain_json_string);
+
+	cJSON* vertex_data_json = json_get_object(root, "vertex_data");
+
+	if(vertex_render_data)
+	{
+//		arrdeln(vertex_render_data, 0, arrlen(vertex_render_data));
+		vertex_render_data = NULL;
+	}
+
+	cJSON* vertex_json;
+	cJSON_ArrayForEach(vertex_json, vertex_data_json)
+	{
+		Vertex vertex;
+
+		cJSON* position = json_get_object(vertex_json, "position");
+		cJSON* color = json_get_object(vertex_json, "color");
+		cJSON* tex_coord = json_get_object(vertex_json, "tex_coord");
+
+		vertex.position.x = json_get_array_item(position, 0)->valuedouble;
+		vertex.position.y = json_get_array_item(position, 1)->valuedouble;
+		vertex.position.z = json_get_array_item(position, 2)->valuedouble;
+
+		vertex.color.r = json_get_array_item(color, 0)->valuedouble;
+		vertex.color.g = json_get_array_item(color, 1)->valuedouble;
+		vertex.color.b = json_get_array_item(color, 2)->valuedouble;
+		vertex.color.a = json_get_array_item(color, 3)->valuedouble;
+		
+		vertex.tex_coord.x = json_get_array_item(tex_coord, 0)->valuedouble;
+		vertex.tex_coord.y = json_get_array_item(tex_coord, 1)->valuedouble;
+
+		arrput(vertex_render_data, vertex);
+	}
+
+	json_delete_object(root);
+
+	free(terrain_json_string);
+}
+
 static void generate_map()
 {
 	int BLOCKS_X = 16;
@@ -176,6 +255,11 @@ static void generate_map()
 
 	srand(time(NULL));
 	const int seed = rand();
+
+	if(blocks)
+	{
+		blocks = NULL;
+	}
 
 	for(int z = 0; z < BLOCKS_Z; z++)
 	{
@@ -194,7 +278,7 @@ static void generate_map()
 				static bool block_is_transparent = false;
 
 				float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, noise_z * noise_factor, 0, 0, 0, seed);
-				log_debug("Perlin Noise: %f\n", perlin_noise);
+//				log_debug("Perlin Noise: %f\n", perlin_noise);
 
 				if(perlin_noise >= 0.2f)
 				{
@@ -222,12 +306,16 @@ static void generate_map()
 		}
 	}
 
-
 	for(int i = 0; i < arrlen(blocks); i++)
 	{
 		cull_faces(&blocks[i], 2 * HALF_BLOCK_SIZE);
 	}
-	
+
+	if(vertex_render_data)
+	{
+		vertex_render_data = NULL;
+	}
+
 	for(int i = 0; i < arrlen(blocks); i++)
 	{
 		for(int j = 0; j < arrlen(blocks[i].vertex_data); j++)
@@ -300,14 +388,40 @@ static void render()
 	ui_render_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 #endif
 	
+	const float frequency = 0.5f;
+	background_color.r = 0.5f + 0.5f * sin(frequency * glfwGetTime());
+	background_color.b = 0.5f + 0.5f * sin(frequency * glfwGetTime() + 2.0f * M_PI / 3.0f);
+	background_color.g = 0.5f + 0.5f * sin(frequency * glfwGetTime() + 4.0f * M_PI / 3.0f);
+	change_window_color(background_color);
+	
 	bind_texture(&block->component_list.sprite_component.texture);
 	
 	bind_shader_program(&block->component_list.sprite_component.shader_program);
 	uniform_mat4(&block->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
 	uniform_mat4(&block->component_list.sprite_component.shader_program, "view", camera.view_matrix);
 
+	ImGui_Begin("Menu", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		ImGui_SetWindowSize((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+		ImGui_SetWindowPos((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+		if(ImGui_Button("Generate"))
+		{
+			generate_map();
+		}
+		if(ImGui_Button("Save"))
+		{
+			save_terrain();
+		}
+		if(ImGui_Button("Load"))
+		{
+			load_terrain("../vertex_data.json");
+		}
+	}
+	ImGui_End();
+
 	bind_vertex_buffer(&block->component_list.sprite_component.vertex_attribs, VAO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(*vertex_render_data), vertex_render_data);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*arrlen(vertex_render_data), vertex_render_data, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex)*arrlen(vertex_render_data), vertex_render_data);
 	glDrawArrays(GL_TRIANGLES, 0, arrlen(vertex_render_data));
 }
 
