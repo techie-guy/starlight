@@ -18,6 +18,7 @@
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
 	#include <emscripten.h>
+	#include <emscripten/html5.h> 
 	#include <GLES3/gl3.h>
 #elif defined(_PLATFORM_ANDROID)
 	#include <GLES3/gl3.h>
@@ -37,8 +38,21 @@ GameEngine game_engine = (GameEngine){};
 static void init()
 {
 	game_engine.current_window.title = WINDOW_TITLE;
+
+#if defined(_PLATFORM_WEB)
+	game_engine.current_window.width = 1920;
+	game_engine.current_window.height = 1080;
+
+	emscripten_request_fullscreen_strategy("canvas", true, &(EmscriptenFullscreenStrategy)
+	{
+		.scaleMode=EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT,
+		.canvasResolutionScaleMode=EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE,
+		.filteringMode=EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST
+	});
+#else
 	game_engine.current_window.width = WINDOW_WIDTH;
 	game_engine.current_window.height = WINDOW_HEIGHT;
+#endif
 
 #if !defined(_PLATFORM_ANDROID)
 	chdir(ASSETS_DIR);

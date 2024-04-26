@@ -59,9 +59,9 @@
     <hr/>
     <div class="emscripten">
       <input type="checkbox" id="resize">Resize canvas
-      <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
+      <input type="checkbox" id="pointerLock">Lock/hide mouse pointer
       &nbsp;&nbsp;&nbsp;
-      <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
+      <input type="button" value="Fullscreen" id="fullscreen_button" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
                                                                                 document.getElementById('resize').checked)">
     </div>
     
@@ -140,6 +140,14 @@
         };
       };
     </script>
+	<script>
+		document.addEventListener("keydown", function(e) {	
+			if(e.key == 's' || e.key == 'd' || e.key == 'a' || e.key == 'w' || e.key == "ArrowUp" || e.key == "ArrowDown" || e.key == " ")
+			{
+				e.preventDefault();
+			}
+		}, false);
+	</script>
     {{{ SCRIPT }}}
   </body>
 </html>

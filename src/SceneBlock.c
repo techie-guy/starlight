@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "UI-Imgui.h"
 #include "SpriteSheet.h"
+#include "JsonHelper.h"
 
 #include <string.h>
 #include <time.h>
@@ -17,8 +18,6 @@
 #include <cglm/struct.h>
 #include <stb_ds.h>
 #include <stb_perlin.h>
-#include "JsonHelper.h"
-#include "cJSON.h"
 
 static vec4s background_color = (vec4s){0.0f, 0.0f, 0.0f, 1.0f};
 
