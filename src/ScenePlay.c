@@ -78,7 +78,6 @@ static Entity* map;
 static SpriteSheet* map_sprite_sheet;
 static Quad map_tiles[MAP_TILE_COUNT];
 static GLushort map_indices[MAP_TILE_COUNT * 6];
-static vec3s map_tile_size = (vec3s){{0.02f, 0.03f}};
 
 // Player
 static void init_player()
@@ -147,8 +146,6 @@ void fill_map()
 	srand(time(NULL));
 	const int seed = rand();
 
-	Texture texture = map->component_list.sprite_component.texture;
-
 	// Vertices
 	for(int y = 0; y < MAP_SIZE_Y; y++)
 	{
@@ -157,6 +154,7 @@ void fill_map()
 			float noise_x = (float)x/(float)MAP_SIZE_X;
 			float noise_y = (float)y/(float)MAP_SIZE_Y;
 			float noise_factor = 10.0f;
+			float scale = 0.1;
 			static char* tile_sprite = "grass";
 
 			float perlin_noise = stb_perlin_noise3_seed(noise_x * noise_factor, noise_y * noise_factor, 0.0f, 0, 0, 0, seed);
@@ -165,10 +163,12 @@ void fill_map()
 			if(perlin_noise > -0.1) tile_sprite = "grass";
 			if(perlin_noise > 0.3) tile_sprite = "stone";
 
-			float x1 = (float)(x*texture.width*map_tile_size.x);
-			float y1 = (float)(y*texture.height*map_tile_size.y);
-			float x2 = (float)((x+1)*texture.width*map_tile_size.x);
-			float y2 = (float)((y+1)*texture.height*map_tile_size.y);
+			Sprite* current_tile_sprite = (Sprite*)hashmap_get(map_sprite_sheet->sprite_hashmap, &(Sprite){ .name=tile_sprite });
+
+			float x1 = (float)(x * current_tile_sprite->sprite_width * scale);
+			float y1 = (float)(y * current_tile_sprite->sprite_height * scale);
+			float x2 = (float)((x+1) * current_tile_sprite->sprite_width * scale);
+			float y2 = (float)((y+1) * current_tile_sprite->sprite_height * scale);
 
 			UV_Coords uv_coords;
 			Sprite* sprite = (Sprite*)hashmap_get(map_sprite_sheet->sprite_hashmap, &(Sprite){ .name=tile_sprite });
@@ -260,7 +260,7 @@ static void init()
 	camera.mouse_sensitivity = 0.1f;
 	camera.pitch = 0.0f;
 	camera.yaw = -90.0f;
-	camera.camera_type = WALK_AROUND;
+//	camera.camera_type = WALK_AROUND;
 	init_camera(&camera);
 
 	
@@ -298,12 +298,16 @@ static void update()
 	}
 
 	move_camera(&camera, input_state, game_engine.deltatime);
+
+	camera.position.x = player->component_list.transform_component.position.x;
+	camera.position.y = player->component_list.transform_component.position.y;
 }
 
 static void render()
 {
-//	ImGui_ShowDemoWindow(NULL);
-//	ui_render_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
+#if defined(_PLATFORM_ANDROID) || defined(_PLATFORM_WEB)
+	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
+#endif
 
 	draw_map();
 	draw_player();
