@@ -30,7 +30,6 @@ typedef struct
 
 static Block* blocks;
 
-
 static float joystick_angle = 0.0f;
 static bool is_joystick_active = false;
 static ImVec2 joystick_box_size = {400.0f, 400.0f};
@@ -383,8 +382,8 @@ static void process_input()
 
 static void render()
 {
-#if defined(_PLATFORM_ANDROID)
-	ui_render_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
+#if defined(_PLATFORM_ANDROID) || defined(_PLATFORM_WEB)
+	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 #endif
 	
 	const float frequency = 0.5f;
