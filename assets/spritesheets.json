@@ -51,7 +51,7 @@
 		"path": "textures/villan.png",
 		"default_sprite": "idle",
 		"type": 0,
-		"width": 416,
+		"width": 384,
 		"height": 32,
 		"sprites": [
 			{
@@ -86,13 +86,13 @@
 				"x": 8,
 				"y": 1,
 				"frame_speed": 10,
-				"sprite_count": 3,
+				"sprite_count": 2,
 				"sprite_width": 32,
 				"sprite_height": 32
 			},
 			{
 				"name": "move-down",
-				"x": 11,
+				"x": 10,
 				"y": 1,
 				"frame_speed": 10,
 				"sprite_count": 2,
