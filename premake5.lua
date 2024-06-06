@@ -120,6 +120,7 @@ project "starlight"
 		"stdc++",
 		"cimgui",
 		"glfw",
+		"enet",
 	}
 
 	includedirs
@@ -133,6 +134,7 @@ project "starlight"
 		"third-party/cimgui",
 		"third-party/cimgui/imgui",
 		"third-party/cimgui/imgui/backends",
+		"third-party/enet/include"
 	}
 
 	files 
@@ -393,3 +395,20 @@ project "cimgui"
 		"third-party/cimgui/imgui/backends/imgui_impl_glfw.cpp",
 	}
 
+project "enet"
+	kind "StaticLib"
+	language "C"
+	
+	targetdir "bin/%{outputdir}/%{prj.name}"
+	objdir "bin/%{outputdir}/%{prj.name}/obj"
+	location "build"
+
+	includedirs
+	{
+		"third-party/enet/include"
+	}
+
+	files
+	{
+		"third-party/enet/*.c",
+	}
