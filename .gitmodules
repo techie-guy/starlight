@@ -24,3 +24,6 @@
 [submodule "third-party/premake-androidndk"]
 	path = third-party/premake-androidndk
 	url = https://github.com/Triang3l/premake-androidndk.git
+[submodule "third-party/enet"]
+	path = third-party/enet
+	url = https://github.com/lsalzman/enet.git
