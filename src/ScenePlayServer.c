@@ -1,6 +1,7 @@
-#include "ScenePlay.h"
+#include "ScenePlayServer.h"
 
 #include "Components.h"
+#include "Network.h"
 #include "Scene.h"
 #include "Camera.h"
 #include "ECS.h"
@@ -28,10 +29,17 @@
 #include <hashmap.h>
 #include <stb_perlin.h>
 
+#include <enet.h>
+
 #include <cglm/struct.h>
 #include "cimgui.h"
 
 static Window* current_window;
+
+static Server server;
+static ENetPeer* peer;
+static ENetEvent event;
+static bool is_server_running = false;
 
 static InputState input_state;
 
@@ -309,10 +317,69 @@ static void render()
 	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 #endif
 
+	while(is_server_running && enet_host_service(server.host, &event, 0) > 0)
+	{
+		switch(event.type)
+		{
+			case ENET_EVENT_TYPE_CONNECT:
+			{
+				log_debug("Client Connected: %u\n", event.peer->address.port);
+				send_packet(server.host, event.peer, "hello!");
+//				event.peer -> data = 
+				break;
+			}
+			case ENET_EVENT_TYPE_RECEIVE:
+			{
+				log_debug("Packet Received: %zu %s %s %u\n", event.packet->dataLength, event.packet->data, (char*)event.peer->data, event.channelID);
+
+				enet_packet_destroy(event.packet);
+				break;
+			}
+			case ENET_EVENT_TYPE_DISCONNECT:
+			{
+				log_debug("%s disconnected\n", (char*)event.peer->data);
+				event.peer->data = NULL;
+			}
+			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
+			{
+				break;
+			}
+			case ENET_EVENT_TYPE_NONE:
+			{
+				break;
+			}
+		}
+	}
+
+
+	ImGui_Begin("Menu", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		ImGui_SetWindowSize((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+		ImGui_SetWindowPos((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+
+		if(ImGui_Button("Start Server"))
+		{
+			if(!is_server_running)
+			{
+				init_server(&server, 1234);
+				is_server_running = true;
+			}
+		}
+
+		if(ImGui_Button("Stop Server"))
+		{
+			if(is_server_running)
+			{
+				destroy_server(&server);
+				is_server_running = false;
+			}
+		}
+	}
+	ImGui_End();
+
+
 	draw_map();
 	draw_player();
-
-	render_text("Hello", 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
 }
 
 static void process_input()
@@ -346,6 +413,12 @@ static void deactivate()
 
 static void destroy()
 {
+	if(is_server_running)
+	{
+		destroy_server(&server);
+		is_server_running = false;
+	}
+
 	destroy_texture(&map->component_list.sprite_component.texture);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
@@ -355,4 +428,4 @@ static void destroy()
 	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }
 
-Scene ScenePlay = {"ScenePlay", init, destroy, activate, deactivate, update, render, process_input};
+Scene ScenePlayServer = {"ScenePlayServer", init, destroy, activate, deactivate, update, render, process_input};

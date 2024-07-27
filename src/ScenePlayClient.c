@@ -1,7 +1,8 @@
-#include "ScenePlay.h"
+#include "ScenePlayClient.h"
 
 #include "Components.h"
 #include "Scene.h"
+#include "Network.h"
 #include "Camera.h"
 #include "ECS.h"
 #include "UI-Imgui.h"
@@ -28,10 +29,17 @@
 #include <hashmap.h>
 #include <stb_perlin.h>
 
+#include <enet.h>
+
 #include <cglm/struct.h>
 #include "cimgui.h"
 
 static Window* current_window;
+
+static Client client;
+static ENetEvent event;
+static ENetPeer* peer = NULL;
+static bool is_server_joined = false;
 
 static InputState input_state;
 
@@ -309,6 +317,72 @@ static void render()
 	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 #endif
 
+
+	while(is_server_joined && enet_host_service(client.host, &event, 0) > 0)
+	{
+		switch(event.type)
+		{
+			case ENET_EVENT_TYPE_CONNECT:
+			{
+				log_debug("Connected: %u\n", event.peer->address.port);
+//				event.peer -> data = 
+				break;
+			}
+			case ENET_EVENT_TYPE_RECEIVE:
+			{
+				log_debug("Packet Received: %zu %s %s %u\n", event.packet->dataLength, event.packet->data, (char*)event.peer->data, event.channelID);
+
+				enet_packet_destroy(event.packet);
+				break;
+			}
+			case ENET_EVENT_TYPE_DISCONNECT:
+			{
+				log_debug("Disconnected\n");
+			}
+			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
+			{
+				break;
+			}
+			case ENET_EVENT_TYPE_NONE:
+			{
+				break;
+			}
+		}
+	}
+
+	
+	ImGui_Begin("Menu", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		ImGui_SetWindowSize((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+		ImGui_SetWindowPos((ImVec2){0.0f, 0.0f}, ImGuiCond_Always);
+
+		if(ImGui_Button("Join Server"))
+		{
+			if(!is_server_joined)
+			{
+				init_client(&client);
+
+//				peer = malloc(sizeof(ENetPeer));
+
+				client_connect_peer(&client, "localhost", 1234, &peer, &event);
+
+				log_debug("%d\n", peer->address.port);
+				is_server_joined = true;
+			}
+		}
+		if(ImGui_Button("Send Packet"))
+		{
+			send_packet(client.host, peer, "Hey!!");
+		}
+
+		if(ImGui_Button("Leave Server"))
+		{
+			disconnect_peer(peer);
+		}
+	}
+	ImGui_End();
+
+
 	draw_map();
 	draw_player();
 
@@ -346,6 +420,12 @@ static void deactivate()
 
 static void destroy()
 {
+	if(is_server_joined)
+	{
+		destroy_client(&client);
+		is_server_joined = false;
+	}
+
 	destroy_texture(&map->component_list.sprite_component.texture);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
@@ -355,4 +435,4 @@ static void destroy()
 	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }
 
-Scene ScenePlay = {"ScenePlay", init, destroy, activate, deactivate, update, render, process_input};
+Scene ScenePlayClient = {"ScenePlayClient", init, destroy, activate, deactivate, update, render, process_input};
