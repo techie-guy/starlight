@@ -14,7 +14,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 29
+                "line": 28
             }
         },
         {
@@ -28,7 +28,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 30
+                "line": 29
             }
         },
         {
@@ -96,7 +96,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 32
+                "line": 31
             }
         },
         {
@@ -148,7 +148,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 33
+                "line": 32
             }
         },
         {
@@ -200,7 +200,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 34
+                "line": 33
             }
         },
         {
@@ -222,7 +222,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 35
+                "line": 34
             }
         },
         {
@@ -244,12 +244,12 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 36
+                "line": 35
             }
         },
         {
-            "name": "cImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback",
-            "original_fully_qualified_name": "ImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback",
+            "name": "cImGui_ImplGlfw_InstallEmscriptenCallbacks",
+            "original_fully_qualified_name": "ImGui_ImplGlfw_InstallEmscriptenCallbacks",
             "return_type": {
                 "declaration": "void",
                 "description": {
@@ -258,6 +258,22 @@
                 }
             },
             "arguments": [
+                {
+                    "name": "window",
+                    "type": {
+                        "declaration": "GLFWwindow*",
+                        "description": {
+                            "kind": "Pointer",
+                            "inner_type": {
+                                "kind": "User",
+                                "name": "GLFWwindow"
+                            }
+                        }
+                    },
+                    "is_array": false,
+                    "is_varargs": false,
+                    "is_instance_pointer": false
+                },
                 {
                     "name": "canvas_selector",
                     "type": {
@@ -292,7 +308,7 @@
             "is_internal": false,
             "source_location": {
                 "filename": "imgui_impl_glfw.h",
-                "line": 40
+                "line": 39
             }
         },
         {
