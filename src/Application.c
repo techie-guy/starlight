@@ -8,8 +8,11 @@
 #include "SpriteSheet.h"
 #include "FontRenderer.h"
 #include "ECS.h"
+#include "Network.h"
 #include "Scene.h"
 #include "ScenePlay.h"
+#include "ScenePlayServer.h"
+#include "ScenePlayClient.h"
 #include "SceneBlock.h"
 #include "SceneMenu.h"
 #include "UI-Imgui.h"
@@ -68,10 +71,13 @@ static void init()
 	init_spritesheet();
 	init_font_renderer("fonts/font.ttf", 96);
 	init_imgui("fonts/font.ttf", 20, "", "#version 100");
+	init_network();
 //	ImGui_GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	// Scene
 	add_scene(&ScenePlay);
+	add_scene(&ScenePlayServer);
+	add_scene(&ScenePlayClient);
 	add_scene(&SceneBlock);
 	add_scene(&SceneMenu);
 	change_scene("SceneMenu");
@@ -103,6 +109,8 @@ static void render_frame()
 
 static void cleanup()
 {
+	destroy_network();
+
 	destroy_ECS();
 	destroy_scenes();
 
