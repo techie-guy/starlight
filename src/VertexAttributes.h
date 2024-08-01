@@ -1,14 +1,9 @@
 #pragma once
 
+#include "Utils.h"
+
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
-
-typedef struct
-{
-	vec3s position;
-	vec4s color;
-	vec2s tex_coord;
-} Vertex;
 
 typedef struct
 {

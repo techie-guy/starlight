@@ -15,6 +15,25 @@
 	#define LOG printf
 #endif
 
+
+typedef struct
+{
+	vec3s position;
+	vec4s color;
+	vec2s tex_coord;
+} Vertex;
+
+
+typedef struct
+{
+	char name[20];
+	int id;
+
+	mat4s transform;
+	
+	Vertex vertex_data[6];
+} Player_Packet;
+
 typedef struct
 {
 	bool left;

@@ -13,6 +13,7 @@
 #include "SpriteSheet.h"
 #include "FontRenderer.h"
 #include "Application.h"
+#include "NetPacker.h"
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
@@ -28,6 +29,7 @@
 
 #include <hashmap.h>
 #include <stb_perlin.h>
+#include <stb_ds.h>
 
 #include <enet.h>
 
@@ -39,6 +41,13 @@ static Window* current_window;
 static Client client;
 static ENetEvent event;
 static ENetPeer* peer = NULL;
+static unsigned char buffer[1024];
+static Player_Packet player_packet;
+static unsigned int player_packet_length = 0;
+static struct { int key; Player_Packet value; }* players = NULL;
+
+static Vertex* server_render_data = NULL;
+
 static bool is_server_joined = false;
 
 static InputState input_state;
@@ -53,28 +62,22 @@ static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
 
 static ImGuiIO* imgui_io;
 
+static Entity* network_render;
+
 // Player
 static SpriteSheet* player_spritesheet;
 static char* player_current_sprite_name = "";
 static Entity* player;
 
-static Quad player_quad[1] =
+static Vertex player_vertex_data[6] =
 {
-	(Quad)
-	{
-		{
-		{{{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f}}},
-		{{{1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 0.0f}}},
-		{{{-1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f}}},
-		{{{-1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 1.0f}}},
-		}
-	}
-};
-
-static GLushort player_indices[6] =
-{
-	0, 1, 2,
-	2, 3, 0
+	{{{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f}}},
+	{{{1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 0.0f}}},
+	{{{-1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f}}},
+	
+	{{{-1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f}}},
+	{{{-1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 1.0f}}},
+	{{{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f}}},
 };
 
 // Map
@@ -87,28 +90,7 @@ static SpriteSheet* map_sprite_sheet;
 static Quad map_tiles[MAP_TILE_COUNT];
 static GLushort map_indices[MAP_TILE_COUNT * 6];
 
-// Player
-static void init_player()
-{
-	player = add_entity("player");
-
-	player->component_list.transform_component = (Component_Transform)
-	{
-		.position = {0.0f, 0.0f, 0.1f},
-		.scale = {1.0f, 1.0f, 1.0f},
-		.speed = 4.0f,
-	};
-
-	player_spritesheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="villan" });
-
-	player_current_sprite_name = player_spritesheet->default_sprite;
-
-	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
-	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices), true);
-	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
-}
-
-static void player_update_texcoords()
+static void update_texcoords(Vertex vertex_data[], int start)
 {
 	Sprite* current_sprite = (Sprite*)hashmap_get(player_spritesheet->sprite_hashmap, &(Sprite){ .name=player_current_sprite_name });
 
@@ -122,30 +104,85 @@ static void player_update_texcoords()
 	if(player_spritesheet->type == SHEET_VERTICAL)
 		anim_frame = current_sprite->y + ((current_frame/current_sprite->frame_speed) % current_sprite->sprite_count);
 
-	get_sprite_animation(player_quad, player_spritesheet, current_sprite, anim_frame);
+	get_sprite_animation_vert(vertex_data, start, player_spritesheet, current_sprite, anim_frame);
+}
+
+
+// Network
+
+static void init_network_render()
+{
+	network_render = add_entity("network");
+	init_texture_from_file(&network_render->component_list.sprite_component.texture, player_spritesheet->path);
+
+	init_vertex_attributes(&network_render->component_list.sprite_component.vertex_attribs, server_render_data, sizeof(Vertex)*6*5, NULL, 0, false);
+	init_shader_program(&network_render->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
+}
+
+static void draw_network_render()
+{
+	bind_shader_program(&network_render->component_list.sprite_component.shader_program);
+
+	uniform_mat4(&network_render->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+	uniform_mat4(&network_render->component_list.sprite_component.shader_program, "view", camera.view_matrix);
+
+
+	bind_texture(&network_render->component_list.sprite_component.texture);
+
+	bind_vertex_buffer(&network_render->component_list.sprite_component.vertex_attribs, VAO);
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex)*arrlen(server_render_data), server_render_data);
+	
+	for(int i = 0; i < arrlen(server_render_data); i+=6)
+	{
+		uniform_mat4(&network_render->component_list.sprite_component.shader_program, "transform", players[i].value.transform);
+		glDrawArrays(GL_TRIANGLES, i, 6);
+	}
+}
+
+// Player
+static void init_player()
+{
+	player = add_entity("player");
+
+	player->component_list.transform_component = (Component_Transform)
+	{
+		.position = {0.0f, 0.0f, 0.1f},
+		.scale = {1.0f, 1.0f, 1.0f},
+		.speed = 4.0f,
+	};
+	
+	player_spritesheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="villan" });
+
+	player_current_sprite_name = player_spritesheet->default_sprite;
+
+	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
+	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_vertex_data, sizeof(Vertex)*6, NULL, 0, false);
+	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
 
 static void draw_player()
 {
 	bind_shader_program(&player->component_list.sprite_component.shader_program);
+	
+	player->component_list.transform_component.transform = (mat4s)GLMS_MAT4_IDENTITY_INIT;
 
-	bind_texture(&player->component_list.sprite_component.texture);
+	player->component_list.transform_component.transform = glms_scale(player->component_list.transform_component.transform, player->component_list.transform_component.scale);
+	player->component_list.transform_component.transform = glms_translate(player->component_list.transform_component.transform, player->component_list.transform_component.position);
 
-	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
-	transform = glms_scale(transform, player->component_list.transform_component.scale);
-	transform = glms_translate(transform, player->component_list.transform_component.position);
+	update_texcoords(player_vertex_data, 0);
 
 	uniform_mat4(&player->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
 	uniform_mat4(&player->component_list.sprite_component.shader_program, "view", camera.view_matrix);
-	uniform_mat4(&player->component_list.sprite_component.shader_program, "transform", transform);
+	uniform_mat4(&player->component_list.sprite_component.shader_program, "transform", player->component_list.transform_component.transform);
 
+
+	bind_texture(&player->component_list.sprite_component.texture);
+	
 	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VAO);
-	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VBO);
 
-	player_update_texcoords();
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(player_quad), player_quad);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex)*6, player_vertex_data);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 // Map
@@ -256,6 +293,9 @@ static void init()
 
 	init_player();
 	init_map();
+	
+	init_network_client(&client, 2);
+	init_network_render();
 
 	camera.position = (vec3s){{0.0f, 0.0f, 10.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
@@ -271,6 +311,12 @@ static void init()
 //	camera.camera_type = WALK_AROUND;
 	init_camera(&camera);
 
+	player_packet = (Player_Packet)
+	{
+		"Player 1",
+		-1,
+	};
+
 	
 	imgui_io = ImGui_GetIO();
 }
@@ -278,6 +324,13 @@ static void init()
 static void update()
 {
 	update_camera(&camera);
+
+	player_packet.transform = player->component_list.transform_component.transform;
+
+	memcpy(player_packet.vertex_data, player_vertex_data, sizeof(Vertex)*6);
+	
+	player_packet_length = pack(buffer, "shm#", player_packet.name, player_packet.id, player_packet.transform, player_packet.vertex_data, 6);
+
 
 	if(!input_state.keyPress)
 	{
@@ -317,6 +370,11 @@ static void render()
 	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
 #endif
 
+	if(is_server_joined)
+	{
+		send_packet(client.host, peer, 0, buffer, player_packet_length);
+	}
+
 
 	while(is_server_joined && enet_host_service(client.host, &event, 0) > 0)
 	{
@@ -324,19 +382,53 @@ static void render()
 		{
 			case ENET_EVENT_TYPE_CONNECT:
 			{
-				log_debug("Connected: %u\n", event.peer->address.port);
-//				event.peer -> data = 
+				log_debug("Connected: %u\n", event.peer->address.port);	
+				
 				break;
 			}
 			case ENET_EVENT_TYPE_RECEIVE:
 			{
-				log_debug("Packet Received: %zu %s %s %u\n", event.packet->dataLength, event.packet->data, (char*)event.peer->data, event.channelID);
+				if(player_packet.id < 0) unpack(event.packet->data, "h", &player_packet.id);
+
+				server_render_data = NULL;
+
+				for(int i = 0; i < event.packet->dataLength/player_packet_length; i++)
+				{
+//					if(hmlen(players) != event.packet->dataLength/90)
+					
+					Player_Packet player_packet_buf = {};
+					Vertex vertex_data[6];
+					char player_name[20];
+
+					unsigned char buf[player_packet_length];
+					memcpy(buf, event.packet->data + i*player_packet_length, player_packet_length);
+
+
+					unpack(buf, "shm#", player_name, &player_packet_buf.id, &player_packet_buf.transform, vertex_data, 6);
+					memcpy(player_packet_buf.vertex_data, vertex_data, sizeof(Vertex)*6);
+					strcpy(player_packet_buf.name, player_name);
+
+					if(player_packet_buf.id == player_packet.id) continue;
+
+					arrput(server_render_data, vertex_data[0]);
+					arrput(server_render_data, vertex_data[1]);
+					arrput(server_render_data, vertex_data[2]);
+					arrput(server_render_data, vertex_data[3]);
+					arrput(server_render_data, vertex_data[4]);
+					arrput(server_render_data, vertex_data[5]);
+
+					hmput(players, player_packet_buf.id, player_packet_buf);
+				}
 
 				enet_packet_destroy(event.packet);
 				break;
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
+				send_int_packet(client.host, peer, player_packet.id, 0);
+				players = NULL;
+				server_render_data = NULL;
+
 				log_debug("Disconnected\n");
 			}
 			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
@@ -358,26 +450,16 @@ static void render()
 
 		if(ImGui_Button("Join Server"))
 		{
-			if(!is_server_joined)
-			{
-				init_client(&client);
 
-//				peer = malloc(sizeof(ENetPeer));
+				network_client_connect_peer(&client, "localhost", 1234, 0, &peer, &event);
 
-				client_connect_peer(&client, "localhost", 1234, &peer, &event);
-
-				log_debug("%d\n", peer->address.port);
 				is_server_joined = true;
-			}
-		}
-		if(ImGui_Button("Send Packet"))
-		{
-			send_packet(client.host, peer, "Hey!!");
 		}
 
 		if(ImGui_Button("Leave Server"))
 		{
 			disconnect_peer(peer);
+			is_server_joined = false;
 		}
 	}
 	ImGui_End();
@@ -385,8 +467,15 @@ static void render()
 
 	draw_map();
 	draw_player();
+	draw_network_render();
 
-	render_text("Hello", 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
+	if(is_server_joined)
+	{
+		char text[2];
+		sprintf(text, "%d", player_packet.id);
+
+		render_text(text, 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
+	}
 }
 
 static void process_input()
@@ -422,9 +511,13 @@ static void destroy()
 {
 	if(is_server_joined)
 	{
-		destroy_client(&client);
+		destroy_network_client(&client);
 		is_server_joined = false;
 	}
+
+	destroy_texture(&network_render->component_list.sprite_component.texture);
+	destroy_shader_program(&network_render->component_list.sprite_component.shader_program);
+	destroy_vertex_attributes(&network_render->component_list.sprite_component.vertex_attribs, true);
 
 	destroy_texture(&map->component_list.sprite_component.texture);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
