@@ -1,6 +1,8 @@
 #define ENET_IMPLEMENTATION
 #include "Network.h"
 #include "Utils.h"
+#include "NetPacker.h"
+
 
 #include <stdlib.h>
 #include <time.h>
@@ -16,13 +18,13 @@ void init_network()
     }
 }
 
-void init_server(Server* server, int port)
+void init_network_server(Server* server, int port, int max_clients, int channels)
 {
 	ENetAddress address = {0};
 	address.host = ENET_HOST_ANY;
 	address.port = port;
 
-	server->host = enet_host_create(&address, 32, 2, 0, 0);
+	server->host = enet_host_create(&address, max_clients, channels, 0, 0);
 
 	if(server == NULL)
 	{
@@ -31,9 +33,9 @@ void init_server(Server* server, int port)
 	}
 }
 
-void init_client(Client* client)
+void init_network_client(Client* client, int channels)
 {
-	client->host = enet_host_create(NULL, 1, 2, 0, 0);
+	client->host = enet_host_create(NULL, 2, 2, 0, 0);
 
 	if(client->host == NULL)
 	{
@@ -42,13 +44,13 @@ void init_client(Client* client)
 	}
 }
 
-void client_connect_peer(Client* client, const char* address_str, int port, ENetPeer** peer, ENetEvent* event)
+void network_client_connect_peer(Client* client, const char* address_str, int port, int channels, ENetPeer** peer, ENetEvent* event)
 {
 	ENetAddress address;
 	enet_address_set_host(&address, address_str);
 	address.port = port;
 
-	*peer = enet_host_connect(client->host, &address, 2, 0);
+	*peer = enet_host_connect(client->host, &address, channels, 0);
 
 	if(peer == NULL)
 	{
@@ -57,11 +59,23 @@ void client_connect_peer(Client* client, const char* address_str, int port, ENet
 	}
 }
 
-void send_packet(ENetHost* host, ENetPeer* peer, char* data)
+void send_packet(ENetHost* host, ENetPeer* peer, int channel, void* data, size_t packet_size)
 {
-	ENetPacket* packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
+	ENetPacket* packet = enet_packet_create(data, packet_size, ENET_PACKET_FLAG_RELIABLE);
 
-	enet_peer_send(peer, 0, packet);
+	enet_peer_send(peer, channel, packet);
+}
+
+void send_int_packet(ENetHost* host, ENetPeer* peer, int channel, int data)
+{
+	unsigned char buf[2];
+	int size = pack(buf, "h", data);
+	send_packet(host, peer, channel, buf, size);
+}
+
+void broadcast_packet(ENetHost* host, int channel_id, ENetPacket* packet)
+{
+	enet_host_broadcast(host, channel_id, packet);
 }
 
 void disconnect_peer(ENetPeer* peer)
@@ -74,12 +88,12 @@ void destroy_network()
 	enet_deinitialize();
 }
 
-void destroy_server(Server* server)
+void destroy_network_server(Server* server)
 {
 	enet_host_destroy(server->host);
 }
 
-void destroy_client(Client* client)
+void destroy_network_client(Client* client)
 {
 	enet_host_destroy(client->host);
 }
