@@ -10,6 +10,8 @@ typedef struct
 	vec3s position;
 	vec3s scale;
 	float speed;
+
+	mat4s transform;
 } Component_Transform;
 
 typedef struct

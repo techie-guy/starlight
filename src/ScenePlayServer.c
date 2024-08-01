@@ -1,5 +1,4 @@
 #include "ScenePlayServer.h"
-
 #include "Components.h"
 #include "Network.h"
 #include "Scene.h"
@@ -13,6 +12,7 @@
 #include "SpriteSheet.h"
 #include "FontRenderer.h"
 #include "Application.h"
+#include "NetPacker.h"
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
@@ -28,6 +28,7 @@
 
 #include <hashmap.h>
 #include <stb_perlin.h>
+#include <stb_ds.h>
 
 #include <enet.h>
 
@@ -39,6 +40,10 @@ static Window* current_window;
 static Server server;
 static ENetPeer* peer;
 static ENetEvent event;
+static struct { int key; Player_Packet value; }* players = NULL;
+static int player_packet_length = 0;
+static unsigned char player_data_buffer[2048];
+
 static bool is_server_running = false;
 
 static InputState input_state;
@@ -53,30 +58,6 @@ static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
 
 static ImGuiIO* imgui_io;
 
-// Player
-static SpriteSheet* player_spritesheet;
-static char* player_current_sprite_name = "";
-static Entity* player;
-
-static Quad player_quad[1] =
-{
-	(Quad)
-	{
-		{
-		{{{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f}}},
-		{{{1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 0.0f}}},
-		{{{-1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f}}},
-		{{{-1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 1.0f}}},
-		}
-	}
-};
-
-static GLushort player_indices[6] =
-{
-	0, 1, 2,
-	2, 3, 0
-};
-
 // Map
 #define MAP_SIZE_X 50
 #define MAP_SIZE_Y 50
@@ -86,67 +67,6 @@ static Entity* map;
 static SpriteSheet* map_sprite_sheet;
 static Quad map_tiles[MAP_TILE_COUNT];
 static GLushort map_indices[MAP_TILE_COUNT * 6];
-
-// Player
-static void init_player()
-{
-	player = add_entity("player");
-
-	player->component_list.transform_component = (Component_Transform)
-	{
-		.position = {0.0f, 0.0f, 0.1f},
-		.scale = {1.0f, 1.0f, 1.0f},
-		.speed = 4.0f,
-	};
-
-	player_spritesheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="villan" });
-
-	player_current_sprite_name = player_spritesheet->default_sprite;
-
-	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
-	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices), true);
-	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
-}
-
-static void player_update_texcoords()
-{
-	Sprite* current_sprite = (Sprite*)hashmap_get(player_spritesheet->sprite_hashmap, &(Sprite){ .name=player_current_sprite_name });
-
-	static int current_frame = 0;
-
-	current_frame++;
-
-	int anim_frame;
-	if(player_spritesheet->type == SHEET_HORIZONTAL)
-		anim_frame = current_sprite->x + ((current_frame/current_sprite->frame_speed) % current_sprite->sprite_count);
-	if(player_spritesheet->type == SHEET_VERTICAL)
-		anim_frame = current_sprite->y + ((current_frame/current_sprite->frame_speed) % current_sprite->sprite_count);
-
-	get_sprite_animation(player_quad, player_spritesheet, current_sprite, anim_frame);
-}
-
-static void draw_player()
-{
-	bind_shader_program(&player->component_list.sprite_component.shader_program);
-
-	bind_texture(&player->component_list.sprite_component.texture);
-
-	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
-	transform = glms_scale(transform, player->component_list.transform_component.scale);
-	transform = glms_translate(transform, player->component_list.transform_component.position);
-
-	uniform_mat4(&player->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
-	uniform_mat4(&player->component_list.sprite_component.shader_program, "view", camera.view_matrix);
-	uniform_mat4(&player->component_list.sprite_component.shader_program, "transform", transform);
-
-	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VAO);
-	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VBO);
-
-	player_update_texcoords();
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(player_quad), player_quad);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-}
 
 // Map
 static void fill_map()
@@ -254,7 +174,6 @@ static void init()
 {
 	current_window = &game_engine.current_window;
 
-	init_player();
 	init_map();
 
 	camera.position = (vec3s){{0.0f, 0.0f, 10.0f}};
@@ -279,43 +198,28 @@ static void update()
 {
 	update_camera(&camera);
 
-	if(!input_state.keyPress)
-	{
-		player_current_sprite_name = player_spritesheet->default_sprite;
-	}
-
-	if(input_state.up)
-	{
-		player->component_list.transform_component.position.y += player->component_list.transform_component.speed * game_engine.deltatime;
-		player_current_sprite_name = "move-up";
-	}
-	if(input_state.down)
-	{
-		player->component_list.transform_component.position.y -= player->component_list.transform_component.speed * game_engine.deltatime;
-		player_current_sprite_name = "move-down";
-	}
-	if(input_state.left)
-	{
-		player->component_list.transform_component.position.x -= player->component_list.transform_component.speed * game_engine.deltatime;
-		player_current_sprite_name = "move-left";
-	}
-	if(input_state.right)
-	{
-		player->component_list.transform_component.position.x += player->component_list.transform_component.speed * game_engine.deltatime;
-		player_current_sprite_name = "move-right";
-	}
-
 	move_camera(&camera, input_state, game_engine.deltatime);
 
-	camera.position.x = player->component_list.transform_component.position.x;
-	camera.position.y = player->component_list.transform_component.position.y;
+	for(int i = 0; i < hmlen(players); i++)
+	{
+		unsigned char buf[152];
+		int packet_size = pack(buf, "shm#", players[i].value.name, players[i].value.id, players[i].value.transform, players[i].value.vertex_data, 6);
+		memcpy(player_data_buffer + i * packet_size, buf, packet_size);
+	}
+
+
+	if(hmlen(players) > 0)
+	{
+		ENetPacket* packet = enet_packet_create(player_data_buffer, 152*hmlen(players), ENET_PACKET_FLAG_RELIABLE);
+		broadcast_packet(server.host, 0, packet);
+	}
 }
 
 static void render()
 {
 #if defined(_PLATFORM_ANDROID) || defined(_PLATFORM_WEB)
 	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
-#endif
+#endif	
 
 	while(is_server_running && enet_host_service(server.host, &event, 0) > 0)
 	{
@@ -324,20 +228,40 @@ static void render()
 			case ENET_EVENT_TYPE_CONNECT:
 			{
 				log_debug("Client Connected: %u\n", event.peer->address.port);
-				send_packet(server.host, event.peer, "hello!");
-//				event.peer -> data = 
+
+				Player_Packet player_packet;
+
+				player_packet.id = hmlen(players);
+
+				send_int_packet(server.host, event.peer, 0, player_packet.id);
+
+				hmput(players, player_packet.id, player_packet);
+				
+				event.peer->data = (int)player_packet.id;
+	
 				break;
 			}
 			case ENET_EVENT_TYPE_RECEIVE:
 			{
-				log_debug("Packet Received: %zu %s %s %u\n", event.packet->dataLength, event.packet->data, (char*)event.peer->data, event.channelID);
+				int player_id;
+				mat4s player_transform;
+				char player_name[20];
+				Vertex vertex_data[6];
 
+				unpack(event.packet->data, "shm#", player_name, &player_id, &player_transform, vertex_data, 6);
+
+				strcpy(players[player_id].value.name, player_name);
+				players[player_id].value.transform = player_transform;
+				memcpy(players[player_id].value.vertex_data, vertex_data, 6*sizeof(Vertex));
+	
 				enet_packet_destroy(event.packet);
 				break;
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
-				log_debug("%s disconnected\n", (char*)event.peer->data);
+				hmdel(players, (int)event.peer->data);
+				log_debug("Player %d disconnected!\n", (int)event.peer->data);
+
 				event.peer->data = NULL;
 			}
 			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
@@ -361,7 +285,7 @@ static void render()
 		{
 			if(!is_server_running)
 			{
-				init_server(&server, 1234);
+				init_network_server(&server, 1234, 32, 2);
 				is_server_running = true;
 			}
 		}
@@ -370,8 +294,11 @@ static void render()
 		{
 			if(is_server_running)
 			{
-				destroy_server(&server);
+				destroy_network_server(&server);
 				is_server_running = false;
+
+				players = NULL;
+				memset(player_data_buffer, 0, 2048);
 			}
 		}
 	}
@@ -379,7 +306,6 @@ static void render()
 
 
 	draw_map();
-	draw_player();
 }
 
 static void process_input()
@@ -415,17 +341,13 @@ static void destroy()
 {
 	if(is_server_running)
 	{
-		destroy_server(&server);
+		destroy_network_server(&server);
 		is_server_running = false;
 	}
 
 	destroy_texture(&map->component_list.sprite_component.texture);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
-	
-	destroy_texture(&player->component_list.sprite_component.texture);
-	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, true);
-	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }
 
 Scene ScenePlayServer = {"ScenePlayServer", init, destroy, activate, deactivate, update, render, process_input};

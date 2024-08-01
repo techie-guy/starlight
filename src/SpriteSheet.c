@@ -117,6 +117,35 @@ void get_sprite_animation(Quad* quad, SpriteSheet* spritesheet, Sprite* sprite, 
 	quad->vertices[3].tex_coord = (vec2s){{x1, y2}};
 }
 
+
+void get_sprite_animation_vert(Vertex vertex_render_data[], int start, SpriteSheet* spritesheet, Sprite* sprite, int frame)
+{
+	float x1, x2, y1, y2;
+
+	if(spritesheet->type == SHEET_HORIZONTAL)
+	{
+		x1 = (float)(frame * sprite->sprite_width)/spritesheet->width;
+		x2 = (float)((frame + 1) * sprite->sprite_width)/spritesheet->width;
+		y1 = (float)(sprite->y * sprite->sprite_height)/spritesheet->height;
+		y2 = (float)((sprite->y + 1) * sprite->sprite_height)/spritesheet->height;
+	}
+	if(spritesheet->type == SHEET_VERTICAL)
+	{
+		x1 = (float)(sprite->x * sprite->sprite_width)/spritesheet->width;
+		x2 = (float)((sprite->x + 1) * sprite->sprite_width)/spritesheet->width;
+		y1 = (float)(frame * sprite->sprite_height)/spritesheet->height;
+		y2 = (float)((frame + 1) * sprite->sprite_height)/spritesheet->height;
+	}
+	
+	(vertex_render_data)[start + 0].tex_coord = (vec2s){{x2, y2}};
+	(vertex_render_data)[start + 1].tex_coord = (vec2s){{x2, y1}};
+	(vertex_render_data)[start + 2].tex_coord = (vec2s){{x1, y1}};
+
+	(vertex_render_data)[start + 3].tex_coord = (vec2s){{x1, y1}};
+	(vertex_render_data)[start + 4].tex_coord = (vec2s){{x1, y2}};
+	(vertex_render_data)[start + 5].tex_coord = (vec2s){{x2, y2}};
+}
+
 void get_spriteUV(UV_Coords* uv_coords, SpriteSheet* spritesheet, Sprite* sprite)
 {
 	uv_coords->x1 = (float)(sprite->x * sprite->sprite_width)/spritesheet->width;
