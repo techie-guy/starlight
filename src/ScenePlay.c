@@ -246,6 +246,8 @@ static void init()
 {
 	current_window = &game_engine.current_window;
 
+	LOG("ScenePlay");
+
 	init_player();
 	init_map();
 
@@ -311,8 +313,6 @@ static void render()
 
 	draw_map();
 	draw_player();
-
-	render_text("Hello", 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
 }
 
 static void process_input()

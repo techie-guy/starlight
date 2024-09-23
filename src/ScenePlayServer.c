@@ -237,7 +237,7 @@ static void render()
 
 				hmput(players, player_packet.id, player_packet);
 				
-				event.peer->data = (int)player_packet.id;
+				event.peer->data = player_packet.id;
 	
 				break;
 			}

@@ -10,7 +10,7 @@
 
 #if defined(_PLATFORM_ANDROID)
 	#include <android/log.h>
-	#define LOG(...) ((void)__android_log_print(ANDROID_LOG_INFO, "MIST_LIB", __VA_ARGS__))	
+	#define LOG(...) ((void)__android_log_print(ANDROID_LOG_INFO, "STARLIGHT", __VA_ARGS__))	
 #else
 	#define LOG printf
 #endif

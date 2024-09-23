@@ -183,6 +183,8 @@ static void draw_player()
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex)*6, player_vertex_data);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+	
+	render_text(player_packet.name, player->component_list.transform_component.position.x, player->component_list.transform_component.position.y, 0.4f, "#ffffff", 1.0f, camera.projection_matrix, camera.view_matrix);
 }
 
 // Map
@@ -451,7 +453,7 @@ static void render()
 		if(ImGui_Button("Join Server"))
 		{
 
-				network_client_connect_peer(&client, "localhost", 1234, 0, &peer, &event);
+				network_client_connect_peer(&client, "192.168.29.166", 1234, 0, &peer, &event);
 
 				is_server_joined = true;
 		}
@@ -474,7 +476,7 @@ static void render()
 		char text[2];
 		sprintf(text, "%d", player_packet.id);
 
-		render_text(text, 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f);
+		render_text(text, 100.0f, 300.0f, 1.0f, "#ffffff", 1.0f, camera.projection_matrix, camera.view_matrix);
 	}
 }
 

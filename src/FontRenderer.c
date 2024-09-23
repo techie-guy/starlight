@@ -91,11 +91,13 @@ void init_font_renderer(const char* font_path, int character_size)
 }
 
 // BUG: Blurry text if scale is not 1.0
-void render_text(char* text, float x, float y, float scale, char* hex_color, float opacity)
+void render_text(char* text, float x, float y, float scale, char* hex_color, float opacity, mat4s projection, mat4s view)
 {
 	bind_shader_program(&shader_program);
-	projection = glms_ortho(0, current_window->width, 0, current_window->height, -1.0f, 1.0f);
+	projection = glms_ortho(0.0f, current_window->width, 0.0f, current_window->height, -1.0f, 1.0f);
+
 	uniform_mat4(&shader_program, "projection", projection);
+	uniform_mat4(&shader_program, "view", view);
 	uniform_vec4(&shader_program, "text_color", hex_to_rbg(hex_color, opacity));
 
 	bind_vertex_buffer(&vertex_attributes, VAO);
@@ -116,7 +118,7 @@ void render_text(char* text, float x, float y, float scale, char* hex_color, flo
 
 			0 1 2 0 2 3
 		*/
-
+/*
 		Quad quad[1] =
 		{
 			(Quad)
@@ -128,7 +130,26 @@ void render_text(char* text, float x, float y, float scale, char* hex_color, flo
 				{{x + w, y + h, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}
 				}
 			}
+		};*/
+		Quad quad[1] =
+		{
+			(Quad)
+			{
+				{
+				{{{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f}}},
+				{{{1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{1.0f, 0.0f}}},
+				{{{-1.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f}}},
+				{{{-1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f, 0.0f}}, {{0.0f, 1.0f}}},
+				}
+			}
 		};
+
+
+		mat4s transform = GLMS_MAT4_IDENTITY_INIT;
+		transform = glms_translate(transform, (vec3s){x, y, 0.0f});
+		transform = glms_scale(transform, (vec3s){1.0f, 1.0f, 0.0f});
+
+		uniform_mat4(&shader_program, "transform", transform);
 
         // render glyph texture over quad
 		bind_texture(&ch.texture);

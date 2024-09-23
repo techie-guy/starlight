@@ -403,6 +403,11 @@ project "enet"
 	objdir "bin/%{outputdir}/%{prj.name}/obj"
 	location "build"
 
+	defines
+	{
+		"HAS_SOCKLEN_T",
+	}
+
 	includedirs
 	{
 		"third-party/enet/include"
