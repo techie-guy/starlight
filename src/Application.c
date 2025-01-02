@@ -11,6 +11,7 @@
 #include "Network.h"
 #include "Scene.h"
 #include "ScenePlay.h"
+#include "SceneModel.h"
 #include "ScenePlayServer.h"
 #include "ScenePlayClient.h"
 #include "SceneBlock.h"
@@ -30,7 +31,6 @@
 	#include <GLFW/glfw3native.h>
 #endif
 
-#include <cglm/struct.h>
 
 // Delta Time
 static float current_frame = 0.0f;
@@ -78,6 +78,7 @@ static void init()
 	add_scene(&ScenePlay);
 	add_scene(&ScenePlayServer);
 	add_scene(&ScenePlayClient);
+	add_scene(&SceneModel);
 	add_scene(&SceneBlock);
 	add_scene(&SceneMenu);
 	change_scene("SceneMenu");

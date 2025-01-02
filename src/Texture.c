@@ -9,19 +9,14 @@ void init_texture_from_file(Texture* texture, const char* texture_path)
 
 	int channels;
 
-	unsigned char* texture_data = stbi_load(texture_path, &texture->width, &texture->height, &channels, 0);
+	unsigned char* texture_data = stbi_load(texture_path, &texture->width, &texture->height, &channels, 4);
 	if(!texture_data)
 	{
 		log_error("Invalid Texture Data: %s\n", texture_path);
 	}
 
 	init_texture_from_data(texture, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
-
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+	
 	stbi_image_free(texture_data);
 }
 
@@ -31,6 +26,11 @@ void init_texture_from_data(Texture* texture, GLint level, GLint internalformat,
 	bind_texture(texture);
 
 	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, texture_data);
+
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
 void set_texture_parameteri(GLenum target, GLenum pname, GLint param)

@@ -134,7 +134,9 @@ project "starlight"
 		"third-party/cimgui",
 		"third-party/cimgui/imgui",
 		"third-party/cimgui/imgui/backends",
-		"third-party/enet/include"
+		"third-party/enet/include",
+		"third-party/cgltf",
+		"third-party/tinyobjloader-c",
 	}
 
 	files 
@@ -417,3 +419,4 @@ project "enet"
 	{
 		"third-party/enet/*.c",
 	}
+

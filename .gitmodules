@@ -27,3 +27,9 @@
 [submodule "third-party/enet"]
 	path = third-party/enet
 	url = https://github.com/zpl-c/enet.git
+[submodule "third-party/cgltf"]
+	path = third-party/cgltf
+	url = https://github.com/jkuhlmann/cgltf
+[submodule "third-party/tinyobjloader-c"]
+	path = third-party/tinyobjloader-c
+	url = https://github.com/syoyo/tinyobjloader-c
