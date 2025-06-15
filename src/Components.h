@@ -17,8 +17,10 @@ typedef struct
 typedef struct
 {
 	VertexAttributes vertex_attribs;
+	VertexAttribHashMap* vertex_attrib_hashmap;
 	unsigned int shader_program;
-	Texture texture;
+
+	TextureHashMap* textures;
 } Component_Sprite;
 
 typedef struct

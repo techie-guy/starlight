@@ -28,6 +28,9 @@ void init_vertex_attributes(VertexAttributes* attrib, void* vertex_data, size_t 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coord));
 	glEnableVertexAttribArray(2);
 
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+	glEnableVertexAttribArray(3);
+
 	if(indexed)
 	{
 		glGenBuffers(1, &attrib->EBO);

@@ -21,6 +21,7 @@ typedef struct
 	vec3s position;
 	vec4s color;
 	vec2s tex_coord;
+	vec3s normal;
 } Vertex;
 
 

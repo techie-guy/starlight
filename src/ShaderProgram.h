@@ -13,6 +13,7 @@ void uniform_float(unsigned int* shader_program, const char* uniform_name, float
 void uniform_vec2(unsigned int* shader_program, const char* uniform_name, vec2s data);
 void uniform_vec3(unsigned int* shader_program, const char* uniform_name, vec3s data);
 void uniform_vec4(unsigned int* shader_program, const char* uniform_name, vec4s data);
+void uniform_mat3(unsigned int* shader_program, const char* uniform_name, mat3s data);
 void uniform_mat4(unsigned int* shader_program, const char* uniform_name, mat4s data);
 
 void destroy_shader_program(unsigned int* shader_program);

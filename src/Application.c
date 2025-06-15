@@ -63,7 +63,6 @@ static void init()
 
 	init_window(&game_engine.current_window);
 	change_window_color(hex_to_rbg("#333333", 1.0f));
-	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);

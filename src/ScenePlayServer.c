@@ -13,12 +13,18 @@
 #include "FontRenderer.h"
 #include "Application.h"
 #include "NetPacker.h"
+#include <stdint.h>
 
 #if defined(_PLATFORM_DESKTOP)
 	#include <glad/gles2.h>
 #elif defined(_PLATFORM_WEB)
 	#include <emscripten.h>
 	#include <GLES3/gl3.h>
+	#include <emscripten/websocket.h>
+	#include <emscripten/threading.h>
+	#include <emscripten/posix_socket.h>
+
+	static EMSCRIPTEN_WEBSOCKET_T bridgeSocket = 0;
 #elif defined(_PLATFORM_ANDROID)
 	#include <GLES3/gl3.h>
 #endif
@@ -143,7 +149,7 @@ static void init_map()
 
 	map_sprite_sheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="tiles" });
 
-	init_texture_from_file(&map->component_list.sprite_component.texture, map_sprite_sheet->path);
+	add_texture_from_file(&map->component_list.sprite_component.textures, "map", map_sprite_sheet->path);
 
 	fill_map();
 	init_shader_program(&map->component_list.sprite_component.shader_program, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
@@ -154,7 +160,7 @@ static void draw_map()
 {
 	bind_shader_program(&map->component_list.sprite_component.shader_program);
 
-	bind_texture(&map->component_list.sprite_component.texture);
+	bind_texture(&shget(map->component_list.sprite_component.textures, "map"));
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
 	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
@@ -237,7 +243,7 @@ static void render()
 
 				hmput(players, player_packet.id, player_packet);
 				
-				event.peer->data = player_packet.id;
+				event.peer->data = (void*)(uintptr_t)player_packet.id;
 	
 				break;
 			}
@@ -259,8 +265,8 @@ static void render()
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
-				hmdel(players, (int)event.peer->data);
-				log_debug("Player %d disconnected!\n", (int)event.peer->data);
+				hmdel(players, (int)(uintptr_t)event.peer->data);
+				log_debug("Player %d disconnected!\n", (int)(uintptr_t)event.peer->data);
 
 				event.peer->data = NULL;
 			}
@@ -345,7 +351,7 @@ static void destroy()
 		is_server_running = false;
 	}
 
-	destroy_texture(&map->component_list.sprite_component.texture);
+	destroy_textures(map->component_list.sprite_component.textures);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
 }

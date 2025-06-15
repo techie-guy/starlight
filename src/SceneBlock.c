@@ -333,7 +333,7 @@ static void init()
 
 	generate_map();
 
-	init_texture_from_file(&block->component_list.sprite_component.texture, block_sprite_sheet->path);
+	add_texture_from_file(&block->component_list.sprite_component.textures, "block", block_sprite_sheet->path);
 	init_vertex_attributes(&block->component_list.sprite_component.vertex_attribs, vertex_render_data, sizeof(Vertex)*arrlen(vertex_render_data), NULL, 0, false);
 	init_shader_program(&block->component_list.sprite_component.shader_program, "shaders/block-vertex-shader.glsl", "shaders/block-fragment-shader.glsl");
 
@@ -392,7 +392,7 @@ static void render()
 	background_color.g = 0.5f + 0.5f * sin(frequency * glfwGetTime() + 4.0f * M_PI / 3.0f);
 	change_window_color(background_color);
 	
-	bind_texture(&block->component_list.sprite_component.texture);
+	bind_texture(&shget(block->component_list.sprite_component.textures, "block"));
 	
 	bind_shader_program(&block->component_list.sprite_component.shader_program);
 	uniform_mat4(&block->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
@@ -433,7 +433,7 @@ static void deactivate()
 
 static void destroy()
 {
-	destroy_texture(&block->component_list.sprite_component.texture);
+	destroy_textures(block->component_list.sprite_component.textures);
 	destroy_shader_program(&block->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&block->component_list.sprite_component.vertex_attribs, false);
 }

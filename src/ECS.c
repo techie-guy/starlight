@@ -15,6 +15,8 @@ Entity* add_entity(char* tag)
 	e->tag = tag;
 	e->is_active = true;
 
+	e->component_list.sprite_component.textures = NULL;
+
 	arrput(entities, e);
 
 	return e;

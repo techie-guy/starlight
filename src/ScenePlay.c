@@ -95,7 +95,7 @@ static void init_player()
 
 	player_current_sprite_name = player_spritesheet->default_sprite;
 
-	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
+	add_texture_from_file(&player->component_list.sprite_component.textures, "player", player_spritesheet->path);
 	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_quad, sizeof(player_quad), player_indices, sizeof(player_indices), true);
 	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
@@ -121,7 +121,7 @@ static void draw_player()
 {
 	bind_shader_program(&player->component_list.sprite_component.shader_program);
 
-	bind_texture(&player->component_list.sprite_component.texture);
+	bind_texture(&shget(player->component_list.sprite_component.textures, "player"));
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
 	transform = glms_scale(transform, player->component_list.transform_component.scale);
@@ -215,7 +215,7 @@ static void init_map()
 
 	map_sprite_sheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="tiles" });
 
-	init_texture_from_file(&map->component_list.sprite_component.texture, map_sprite_sheet->path);
+	add_texture_from_file(&map->component_list.sprite_component.textures, "map", map_sprite_sheet->path);
 
 	fill_map();
 	init_shader_program(&map->component_list.sprite_component.shader_program, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
@@ -226,7 +226,7 @@ static void draw_map()
 {
 	bind_shader_program(&map->component_list.sprite_component.shader_program);
 
-	bind_texture(&map->component_list.sprite_component.texture);
+	bind_texture(&shget(map->component_list.sprite_component.textures, "map"));
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
 	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
@@ -346,11 +346,11 @@ static void deactivate()
 
 static void destroy()
 {
-	destroy_texture(&map->component_list.sprite_component.texture);
+	destroy_textures(map->component_list.sprite_component.textures);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
 	
-	destroy_texture(&player->component_list.sprite_component.texture);
+	destroy_textures(player->component_list.sprite_component.textures);
 	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, true);
 	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }

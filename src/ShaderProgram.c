@@ -114,6 +114,11 @@ void uniform_mat4(unsigned int* shader_program, const char* uniform_name, mat4s 
 	glUniformMatrix4fv(get_uniform_location(shader_program, uniform_name), 1, GL_FALSE, (float*)data.raw);
 }
 
+void uniform_mat3(unsigned int* shader_program, const char* uniform_name, mat3s data)
+{
+	glUniformMatrix3fv(get_uniform_location(shader_program, uniform_name), 1, GL_FALSE, (float*)data.raw);
+}
+
 void destroy_shader_program(unsigned int* shader_program)
 {
 	glDeleteProgram(*shader_program);

@@ -1,3 +1,12 @@
+#if defined(_PLATFORM_WEB)
+#include <emscripten.h>
+#include <emscripten/websocket.h>
+#include <emscripten/threading.h>
+#include <emscripten/posix_socket.h>
+
+static EMSCRIPTEN_WEBSOCKET_T bridgeSocket = 0;
+#endif
+
 #define ENET_IMPLEMENTATION
 #include "Network.h"
 #include "Utils.h"
@@ -28,6 +37,7 @@ void init_network_server(Server* server, int port, int max_clients, int channels
 
 	if(server == NULL)
 	{
+	log_debug("Hey!\n");
 		log_error("Error in creating server!\n");
 		exit(EXIT_FAILURE);
 	}

@@ -17,6 +17,8 @@ typedef struct
 	unsigned int EBO;
 } VertexAttributes;
 
+typedef struct { char* key; VertexAttributes value; } VertexAttribHashMap;
+
 enum Buffers
 {
 	VAO,

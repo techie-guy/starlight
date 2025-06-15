@@ -20,6 +20,11 @@
 #elif defined(_PLATFORM_WEB)
 	#include <emscripten.h>
 	#include <GLES3/gl3.h>
+	#include <emscripten/websocket.h>
+	#include <emscripten/threading.h>
+	#include <emscripten/posix_socket.h>
+
+static EMSCRIPTEN_WEBSOCKET_T bridgeSocket = 0;
 #elif defined(_PLATFORM_ANDROID)
 	#include <GLES3/gl3.h>
 #endif
@@ -113,7 +118,7 @@ static void update_texcoords(Vertex vertex_data[], int start)
 static void init_network_render()
 {
 	network_render = add_entity("network");
-	init_texture_from_file(&network_render->component_list.sprite_component.texture, player_spritesheet->path);
+	add_texture_from_file(&network_render->component_list.sprite_component.textures, "network", player_spritesheet->path);
 
 	init_vertex_attributes(&network_render->component_list.sprite_component.vertex_attribs, server_render_data, sizeof(Vertex)*6*5, NULL, 0, false);
 	init_shader_program(&network_render->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
@@ -127,7 +132,7 @@ static void draw_network_render()
 	uniform_mat4(&network_render->component_list.sprite_component.shader_program, "view", camera.view_matrix);
 
 
-	bind_texture(&network_render->component_list.sprite_component.texture);
+	bind_texture(&shget(network_render->component_list.sprite_component.textures, "network"));
 
 	bind_vertex_buffer(&network_render->component_list.sprite_component.vertex_attribs, VAO);
 
@@ -156,7 +161,7 @@ static void init_player()
 
 	player_current_sprite_name = player_spritesheet->default_sprite;
 
-	init_texture_from_file(&player->component_list.sprite_component.texture, player_spritesheet->path);
+	add_texture_from_file(&player->component_list.sprite_component.textures,"player", player_spritesheet->path);
 	init_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, player_vertex_data, sizeof(Vertex)*6, NULL, 0, false);
 	init_shader_program(&player->component_list.sprite_component.shader_program, "shaders/player-vertex-shader.glsl", "shaders/player-fragment-shader.glsl");
 }
@@ -177,7 +182,7 @@ static void draw_player()
 	uniform_mat4(&player->component_list.sprite_component.shader_program, "transform", player->component_list.transform_component.transform);
 
 
-	bind_texture(&player->component_list.sprite_component.texture);
+	bind_texture(&shget(player->component_list.sprite_component.textures, "player"));
 	
 	bind_vertex_buffer(&player->component_list.sprite_component.vertex_attribs, VAO);
 
@@ -262,7 +267,7 @@ static void init_map()
 
 	map_sprite_sheet = (SpriteSheet*)hashmap_get(sprite_sheet_hashmap, &(SpriteSheet){ .name="tiles" });
 
-	init_texture_from_file(&map->component_list.sprite_component.texture, map_sprite_sheet->path);
+	add_texture_from_file(&map->component_list.sprite_component.textures, "map", map_sprite_sheet->path);
 
 	fill_map();
 	init_shader_program(&map->component_list.sprite_component.shader_program, "shaders/map-vertex-shader.glsl", "shaders/map-fragment-shader.glsl");
@@ -273,7 +278,7 @@ static void draw_map()
 {
 	bind_shader_program(&map->component_list.sprite_component.shader_program);
 
-	bind_texture(&map->component_list.sprite_component.texture);
+	bind_texture(&shget(map->component_list.sprite_component.textures, "map"));
 
 	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
 	transform = glms_scale(transform, (vec3s){{1.0f, 1.0f, 0.0f}});
@@ -452,8 +457,7 @@ static void render()
 
 		if(ImGui_Button("Join Server"))
 		{
-
-				network_client_connect_peer(&client, "192.168.29.166", 1234, 0, &peer, &event);
+				network_client_connect_peer(&client, "ws://localhost", 1234, 0, &peer, &event);
 
 				is_server_joined = true;
 		}
@@ -517,15 +521,15 @@ static void destroy()
 		is_server_joined = false;
 	}
 
-	destroy_texture(&network_render->component_list.sprite_component.texture);
+	destroy_textures(network_render->component_list.sprite_component.textures);
 	destroy_shader_program(&network_render->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&network_render->component_list.sprite_component.vertex_attribs, true);
 
-	destroy_texture(&map->component_list.sprite_component.texture);
+	destroy_textures(map->component_list.sprite_component.textures);
 	destroy_shader_program(&map->component_list.sprite_component.shader_program);
 	destroy_vertex_attributes(&map->component_list.sprite_component.vertex_attribs, true);
 	
-	destroy_texture(&player->component_list.sprite_component.texture);
+	destroy_textures(player->component_list.sprite_component.textures);
 	destroy_vertex_attributes(&player->component_list.sprite_component.vertex_attribs, true);
 	destroy_shader_program(&player->component_list.sprite_component.shader_program);
 }

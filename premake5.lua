@@ -86,26 +86,36 @@ project "starlight"
 		defines
 		{
 			"_PLATFORM_WEB",
-		}
+		}	
 
 		links
 		{
 			"glfw3",
+			"websocket.js",
+		}
+
+		buildoptions
+		{
+			"-pthread",
 		}
 
 		linkoptions
 		{
+			"-pthread",
+			"-sPROXY_POSIX_SOCKETS",
+--			"-sPROXY_TO_PTHREAD",
 			"-sUSE_GLFW=3",
 			"-sWASM=1",
 			"-sMAX_WEBGL_VERSION=2",
+			"-sTOTAL_MEMORY=32768000",
 			"-sALLOW_MEMORY_GROWTH=1",
-			"-sNO_EXIT_RUNTIME=0",
+--			"-sNO_EXIT_RUNTIME=0",
 			"-sASSERTIONS=1",
-			"--preload-file %{assets_dir}",
-			"--shell-file %{assets_dir}/index.html",
+			"--embed-file %{assets_dir}",
+			"--shell-file %{assets_dir}/index.html",	
 		}
 	filter {}
-
+	
 	defines
 	{
 		"WINDOW_WIDTH=%{window_width}",

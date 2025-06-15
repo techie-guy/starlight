@@ -2,6 +2,8 @@
 #include "Utils.h"
 
 #include <stb_image.h>
+#include <stb_ds.h>
+
 
 void init_texture_from_file(Texture* texture, const char* texture_path)
 {
@@ -25,13 +27,47 @@ void init_texture_from_data(Texture* texture, GLint level, GLint internalformat,
 	glGenTextures(1, &texture->texture_id);
 	bind_texture(texture);
 
-	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, texture_data);
+	if(!texture->texture_config.is_init)
+	{
+		texture->texture_config.wrap_s = GL_REPEAT;
+		texture->texture_config.wrap_t = GL_REPEAT;
+		texture->texture_config.min_filter = GL_NEAREST;
+		texture->texture_config.mag_filter = GL_NEAREST;
+	}	
 
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture->texture_config.wrap_s);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture->texture_config.wrap_t);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture->texture_config.min_filter);
+	set_texture_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture->texture_config.mag_filter);
+
+	glTexImage2D(GL_TEXTURE_2D, level, internalformat, texture->width, texture->height, 0, format, type, texture_data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
+
+void add_texture_from_file(TextureHashMap** textures, const char* texture_name, const char* texture_path)
+{
+	Texture texture = {};
+
+	init_texture_from_file(&texture, texture_path);
+
+	shput(*textures, texture_name, texture);
+}
+
+
+void add_texture_from_data(TextureHashMap** textures, const char* texture_name, GLint level, GLint internalformat, GLenum format, GLenum type, void* texture_data)
+{
+	Texture texture = {};
+
+	init_texture_from_data(&texture, level, internalformat, format, type, texture_data);
+
+	shput(*textures, texture_name, texture);
+}
+
+void texture_active_slot(GLenum slot)
+{
+	glActiveTexture(slot);
+}
+
 
 void set_texture_parameteri(GLenum target, GLenum pname, GLint param)
 {
@@ -51,4 +87,12 @@ void unbind_texture()
 void destroy_texture(Texture* texture)
 {
 	glDeleteTextures(1, &texture->texture_id);
+}
+
+void destroy_textures(TextureHashMap* textures)
+{
+	for(int i = 0; i < shlen(textures); i++)
+	{
+		//
+	}
 }

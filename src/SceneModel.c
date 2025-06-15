@@ -2,21 +2,39 @@
 #include "Application.h"
 #include "Scene.h"
 #include "ECS.h"
+#include "Texture.h"
+#include "UI-Imgui.h"
 #include "VertexAttributes.h"
 #include "ShaderProgram.h"
 
 #include "Camera.h"
 
 #include "3D-Loader.h"
+#include "cglm/struct/affine-pre.h"
+#include "cimgui.h"
 
 #include <stb_ds.h>
 
+static ImGuiIO* imgui_io = NULL;
+
 static Model model;
+static Model light_model;
 
 
 static Entity* model_scene;
-static Vertex* vertex_render_data = NULL;
-static GLushort* index_data = NULL;
+
+static vec3s model_position = (vec3s){0.0f, 0.0f, 0.0f};
+static vec3s model_scale = (vec3s){0.1f, 0.1f, 0.1f};
+
+static vec3s light_position = (vec3s){0.0f, 0.0f, 15.0f};
+static vec3s light_color = (vec3s){1.0f, 1.0f, 1.0f};
+static float light_intensity = 10.0f;
+
+static Entity* light_source;
+
+//static Vertex* vertex_render_data = NULL;
+//static GLushort* index_data = NULL;
+
 
 static Camera camera;
 
@@ -26,17 +44,29 @@ static InputState input_state;
 static void init()
 {
 	model_scene = add_entity("Model");
+	light_source = add_entity("Light Source");
 
 	model.data = NULL;
 
 	model.type = MODEL_GLTF;
-	model_load_from_file(&model, "3d-models/skull.glb");
-	model_parse_data(&model, &vertex_render_data, &index_data);
-	model_load_texture(&model, &model_scene->component_list.sprite_component.texture);
-	
+	model_load_from_file(&model, "3d-models/lambo.glb");
+//	model_load_from_file(&model, "3d-models/cube4.glb");
+	model_parse_data(&model);
 
-	init_vertex_attributes(&model_scene->component_list.sprite_component.vertex_attribs, vertex_render_data, sizeof(Vertex)*model.vertex_count, index_data, sizeof(GLushort)*model.index_count, true);
+	light_model.data = NULL;
+
+	light_model.type = MODEL_GLTF;
+	model_load_from_file(&light_model, "3d-models/cube.glb");
+	model_parse_data(&light_model);
+
+//	model_load_materials(&model, &model_scene->component_list.sprite_component.textures);
+
+
+//	init_vertex_attributes(&model_scene->component_list.sprite_component.vertex_attribs, model.vertex_render_data, arrlen(model.vertex_render_data)*sizeof(Vertex), model.index_data, model.index_count*sizeof(GLushort), true);
 	init_shader_program(&model_scene->component_list.sprite_component.shader_program, "shaders/model-vertex-shader.glsl", "shaders/model-fragment-shader.glsl");
+
+	init_shader_program(&light_source->component_list.sprite_component.shader_program, "shaders/light-source-vertex-shader.glsl", "shaders/light-source-fragment-shader.glsl");
+
 
 	camera.position = (vec3s){{-10.0f, 0.0f, 20.0f}};
 	camera.target = (vec3s){{0.0f, 0.0f, 0.0f}};
@@ -51,30 +81,104 @@ static void init()
 	camera.yaw = -90.0f;
 	camera.camera_type =  WALK_AROUND | LOOK_AROUND;
 	init_camera(&camera);
+	
+	imgui_io = ImGui_GetIO();
 }
 
 static void render()
-{	
-	mat4s transform = GLMS_MAT4_IDENTITY_INIT;
-//	transform = glms_scale(transform, (vec3s){10.0f, 10.0f, 10.0f});
-	static float angle = 0.0f;
-	transform = glms_rotate(transform, glm_rad(angle), (vec3s){0.0f, 1.0f, 0.0f});
-	angle -= 1.0f;
+{
+	change_window_color(hex_to_rbg("#222222", 1.0f));
+
+	mat4s model_transform = GLMS_MAT4_IDENTITY_INIT;
+	model_transform = glms_scale(model_transform, model_scale);
+	model_transform = glms_translate(model_transform, model_position);
+//	static float angle = 0.0f;
+//	transform = glms_rotate(transform, glm_rad(angle), (vec3s){0.0f, 1.0f, 0.0f});
+//	angle -= 0.0f;
+	
+	mat4s light_source_transform = GLMS_MAT4_IDENTITY_INIT;
+	light_source_transform = glms_translate(light_source_transform, light_position);
+	light_source_transform = glms_scale(light_source_transform, (vec3s){0.2f, 0.2f, 0.2f});
+
+	bind_shader_program(&light_source->component_list.sprite_component.shader_program);
+	uniform_vec3(&light_source->component_list.sprite_component.shader_program, "light_color", light_color);
+	uniform_mat4(&light_source->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+	uniform_mat4(&light_source->component_list.sprite_component.shader_program, "view", camera.view_matrix);
+	uniform_mat4(&light_source->component_list.sprite_component.shader_program, "transform", light_source_transform);
+
+	//bind_vertex_buffer(&light_source->component_list.sprite_component.vertex_attribs, VAO);
+	bind_vertex_buffer(&light_model.meshes_hashmap[0].value.vertex_attribs, VAO);
+	glDrawElements(GL_TRIANGLES, light_model.meshes_hashmap[0].value.index_count, GL_UNSIGNED_SHORT, 0);
+
+
 
 
 //	cgltf_node_transform_local(&model.data->nodes[0], (float*)transform.raw);
 
-	bind_texture(&model_scene->component_list.sprite_component.texture);
+//	bind_texture(&shget(model_scene->component_list.sprite_component.textures, "base_color"));
 
 	bind_shader_program(&model_scene->component_list.sprite_component.shader_program);
 	uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
 	uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "view", camera.view_matrix);
-	uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "transform", transform);
+	uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "transform", model_transform);
 
 
-	bind_vertex_buffer(&model_scene->component_list.sprite_component.vertex_attribs, VAO);
-//	glDrawArrays(GL_TRIANGLES, 0, arrlen(vertex_render_data));
-	glDrawElements(GL_TRIANGLES, model.index_count, GL_UNSIGNED_SHORT, 0);
+	for(int i = 0; i < shlen(model.meshes_hashmap); i++)
+	{
+		bind_vertex_buffer(&model.meshes_hashmap[i].value.vertex_attribs, VAO);
+
+		texture_active_slot(GL_TEXTURE0);
+		bind_texture(&shget(model.meshes_hashmap[i].value.material.texture_hashmap, "base_color"));
+		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.base_color", 0);
+				
+		texture_active_slot(GL_TEXTURE1);
+		bind_texture(&shget(model.meshes_hashmap[i].value.material.texture_hashmap, "metallic"));
+		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.metallic", 1);
+	
+//		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.roughness", 2);
+//		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.normal_map", 3);
+//		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.occlusion", 4);
+//		bind_texture(&shget(model.meshes_hashmap[i].value.material.texture_hashmap, "base_color"));
+
+		uniform_vec3(&model_scene->component_list.sprite_component.shader_program, "cam_pos", camera.position);
+		uniform_vec3(&model_scene->component_list.sprite_component.shader_program, "model_pos", model_position);
+	
+		uniform_vec3(&model_scene->component_list.sprite_component.shader_program, "light.position", light_position);
+		uniform_vec3(&model_scene->component_list.sprite_component.shader_program, "light.color", light_color);
+		uniform_float(&model_scene->component_list.sprite_component.shader_program, "light.intensity", light_intensity);
+	
+//		texture_active_slot(GL_TEXTURE1);
+//		bind_texture(&shget(model_scene->component_list.sprite_component.textures, "specular"));
+//		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.specular", 1);
+
+//		texture_active_slot(GL_TEXTURE2);
+//		bind_texture(&shget(model_scene->component_list.sprite_component.textures, "normal"));
+//		uniform_int(&model_scene->component_list.sprite_component.shader_program, "material.normal_map", 2);
+
+		uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "projection", camera.projection_matrix);
+		uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "view", camera.view_matrix);
+		uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "transform", model_transform);
+		uniform_mat3(&model_scene->component_list.sprite_component.shader_program, "transform_normal", glms_mat3_transpose(glms_mat3_inv(glms_mat4_pick3(model_transform))));
+
+
+		glDrawElements(GL_TRIANGLES, model.meshes_hashmap[i].value.index_count, GL_UNSIGNED_SHORT, 0);
+	}
+
+	// Imgui
+	ImGui_Begin("Scene Controls", NULL, ImGuiWindowFlags_None);
+	{
+//		ImGui_SetWindowSize((ImVec2){150.0f, 500.0f}, ImGuiCond_Once);
+//		ImGui_SetWindowPos((ImVec2){0.0f, 0.0f}, ImGuiCond_Once);
+
+		ImGui_DragFloat3("Model Position", model_position.raw);
+		ImGui_DragFloat3("Model Scale", model_scale.raw);
+
+		ImGui_DragFloat("Light Intensity", &light_intensity);
+		ImGui_DragFloat3("Light Position", light_position.raw);
+		ImGui_DragFloat3Ex("Light Color", light_color.raw, 0.05f, -1.0f, 1.0f, "%.3f", 0);
+	}
+	ImGui_End();
+
 }
 
 static void update()
@@ -120,9 +224,8 @@ static void destroy()
 //	free(index_data);
 
 	model_free(&model);
-	destroy_texture(&model_scene->component_list.sprite_component.texture);
+	destroy_textures(model_scene->component_list.sprite_component.textures);
 	destroy_shader_program(&model_scene->component_list.sprite_component.shader_program);
-	destroy_vertex_attributes(&model_scene->component_list.sprite_component.vertex_attribs, true);
 }
 
 
