@@ -3,6 +3,7 @@
 attribute vec3 a_pos;
 attribute vec4 a_color;
 attribute vec2 a_tex_coord;
+attribute vec3 a_normal;
 
 varying vec4 f_color;
 varying vec2 f_tex_coord;
