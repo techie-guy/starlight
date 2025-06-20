@@ -54,7 +54,7 @@ void move_camera(Camera* camera, InputState input_state, float deltatime)
 	}
 	if((camera->camera_type & LOOK_AROUND) && !imgui_io->WantCaptureMouse)
 	{
-#if defined(_PLATFORM_ANDROID)
+#if defined(_PLATFORM_ANDROID) || defined(_PLATFORM_WEB)
 		if(game_engine.current_window.input_system.mouse_position.x >= game_engine.current_window.width/2.0f && game_engine.current_window.input_system.mouse_clicked_data[GLFW_MOUSE_BUTTON_LEFT])
 #else
 		if(game_engine.current_window.input_system.mouse_clicked_data[GLFW_MOUSE_BUTTON_LEFT])

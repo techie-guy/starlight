@@ -107,7 +107,7 @@ project "starlight"
 			"-sUSE_GLFW=3",
 			"-sWASM=1",
 			"-sMAX_WEBGL_VERSION=2",
-			"-sTOTAL_MEMORY=32768000",
+			"-sTOTAL_MEMORY=262144000", -- 32768000
 			"-sALLOW_MEMORY_GROWTH=1",
 --			"-sNO_EXIT_RUNTIME=0",
 			"-sASSERTIONS=1",

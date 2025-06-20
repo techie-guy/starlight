@@ -17,6 +17,14 @@
 
 static ImGuiIO* imgui_io = NULL;
 
+
+static float joystick_angle = 0.0f;
+static bool is_joystick_active = false;
+static ImVec2 joystick_box_size = {400.0f, 400.0f};
+static float joystick_radius = 70.0f;
+static ImVec4 joystick_color = {225.0f, 225.0f, 225.0f, 100.0f};
+
+
 static Model model;
 static Model light_model;
 
@@ -87,6 +95,10 @@ static void init()
 
 static void render()
 {
+#if defined(_PLATFORM_ANDROID) || defined(_PLATFORM_WEB)
+	ui_component_joystick("Input", "Joystick", joystick_box_size, joystick_radius, joystick_color, &joystick_angle, &is_joystick_active);
+#endif
+
 	change_window_color(hex_to_rbg("#222222", 1.0f));
 
 	mat4s model_transform = GLMS_MAT4_IDENTITY_INIT;
@@ -198,14 +210,13 @@ static void process_input()
 	input_state.l_ctrl = input_system.key_pressed_data[GLFW_KEY_LEFT_CONTROL];
 
 	// Joystick
-	/*
 	if(is_joystick_active)
 	{
 		if(joystick_angle >= 315.0f || joystick_angle <= 45.0f) input_state.right = true;
 		else if(joystick_angle >= 45.0f && joystick_angle <= 135.0f) input_state.up = true;
 		else if(joystick_angle >= 135.0f && joystick_angle <= 225.0f) input_state.left = true;
 		else if(joystick_angle >= 225.0f && joystick_angle <= 315.0f) input_state.down = true;
-	}*/
+	}
 
 	move_camera(&camera, input_state, game_engine.deltatime);
 
