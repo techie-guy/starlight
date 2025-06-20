@@ -1,0 +1,5 @@
+#pragma once
+
+#include "../core/scene.h"
+
+extern Scene scene_play_server;

@@ -74,7 +74,7 @@ project "starlight"
 
 		buildoptions
 		{
-			"-include src/android-fopen.h"
+			"-include src/utils/android_fopen.h"
 		}
 	filter {}
 
@@ -161,7 +161,7 @@ project "starlight"
 
 	removefiles
 	{
-		"src/android-fopen.h", "src/android-fopen.c"
+		"src/utils/android_fopen.h", "src/utils/android_fopen.c"
 	}
 
 	filter "configurations:Debug"
@@ -221,8 +221,8 @@ filter { "platforms:Android" }
 
 		files 
 		{
-			"src/android-fopen.h",
-			"src/android-fopen.c",
+			"src/utils/android_fopen.h",
+			"src/utils/android_fopen.c",
 		}
 
 		links
@@ -366,7 +366,7 @@ project "cimgui"
 	filter { "platforms:Android" }
 		buildoptions
 		{
-			"-include ../../src/android-fopen.h"
+			"-include ../../src/utils/android_fopen.h"
 		}
 
 		defines
