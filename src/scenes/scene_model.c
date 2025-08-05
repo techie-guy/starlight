@@ -30,7 +30,8 @@ static Model light_model;
 static Entity* model_scene;
 
 static vec3s model_position = (vec3s){0.0f, 0.0f, 0.0f};
-static vec3s model_scale = (vec3s){0.1f, 0.1f, 0.1f};
+static vec3s model_scale = (vec3s){1.0f, 1.0f, 1.0f};
+static vec3s model_rotation = (vec3s){0.0f, 0.0f, 0.0f};
 
 static vec3s light_position = (vec3s){0.0f, 0.0f, 15.0f};
 static vec3s light_color = (vec3s){1.0f, 1.0f, 1.0f};
@@ -55,7 +56,7 @@ static void init()
 	model.data = NULL;
 
 	model.type = MODEL_GLTF;
-	model_load_from_file(&model, "3d-models/lambo.glb");
+	model_load_from_file(&model, "3d-models/Rover.glb");
 //	model_load_from_file(&model, "3d-models/cube4.glb");
 	model_parse_data(&model);
 
@@ -101,6 +102,9 @@ static void render()
 
 	mat4s model_transform = GLMS_MAT4_IDENTITY_INIT;
 	model_transform = glms_scale(model_transform, model_scale);
+	model_transform = glms_rotate(model_transform, glm_rad(model_rotation.x), (vec3s){1.0f, 0.0f, 0.0f});
+	model_transform = glms_rotate(model_transform, glm_rad(model_rotation.y), (vec3s){0.0f, 1.0f, 0.0f});
+	model_transform = glms_rotate(model_transform, glm_rad(model_rotation.z), (vec3s){0.0f, 0.0f, 1.0f});
 	model_transform = glms_translate(model_transform, model_position);
 //	static float angle = 0.0f;
 //	transform = glms_rotate(transform, glm_rad(angle), (vec3s){0.0f, 1.0f, 0.0f});
@@ -170,7 +174,6 @@ static void render()
 		uniform_mat4(&model_scene->component_list.sprite_component.shader_program, "transform", model_transform);
 		uniform_mat3(&model_scene->component_list.sprite_component.shader_program, "transform_normal", glms_mat3_transpose(glms_mat3_inv(glms_mat4_pick3(model_transform))));
 
-
 		glDrawElements(GL_TRIANGLES, model.meshes_hashmap[i].value.index_count, GL_UNSIGNED_SHORT, 0);
 	}
 
@@ -182,6 +185,7 @@ static void render()
 
 		ImGui_DragFloat3("Model Position", model_position.raw);
 		ImGui_DragFloat3("Model Scale", model_scale.raw);
+		ImGui_DragFloat3("Model Rotation", model_rotation.raw);
 
 		ImGui_DragFloat("Light Intensity", &light_intensity);
 		ImGui_DragFloat3("Light Position", light_position.raw);

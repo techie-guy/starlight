@@ -26,6 +26,8 @@ typedef struct
 	size_t vertex_count;
 	size_t index_count;
 
+	mat4s mesh_transform;
+
 	VertexAttributes vertex_attribs;
 	
 	Vertex* vertex_render_data;
